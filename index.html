@@ -1,0 +1,4467 @@
+<!doctype html>
+<html lang="ko"><head>
+    <script type="module" src="/@vite/client"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쉬운 말 안내 — 어르신·어린이를 위한 쉬운 안내문 도우미</title>
+    <meta name="description" content="어려운 제품 설명서나 약 봉투, 공고문을 사진으로 올리면 어르신과 어린이가 이해하기 쉬운 말과 소리로 바로 알려드리는 서비스입니다.">
+    <meta property="og:title" content="쉬운 말 안내 — 어르신·어린이를 위한 쉬운 안내문 도우미">
+    <meta property="og:description" content="어려운 제품 설명서나 약 봉투, 공고문을 사진으로 올리면 어르신과 어린이가 이해하기 쉬운 말과 소리로 바로 알려드립니다.">
+    <meta property="og:type" content="website">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <script defer="" src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+      :root {
+        --bg: #f8f9fb;
+        --surface: #ffffff;
+        --surface-muted: #f4f5f7;
+        --surface-blue: #eff6ff;
+        --surface-blue-soft: #f0f7ff;
+        --surface-amber: #fffbeb;
+        --surface-red: #fef2f2;
+        --surface-emerald: #ecfdf5;
+        --border: #e4e4e7;
+        --border-strong: #d4d4d8;
+        --border-blue: #bfdbfe;
+        --border-amber: #fde68a;
+        --border-red: #fecaca;
+        --border-emerald: #a7f3d0;
+        --text: #18181b;
+        --text-muted: #52525b;
+        --text-soft: #71717a;
+        --blue: #1d4ed8;
+        --blue-hover: #1e40af;
+        --blue-dark: #1e3a8a;
+        --red: #b91c1c;
+        --red-bg: #dc2626;
+        --emerald: #065f46;
+        --amber: #92400e;
+        --radius-lg: 16px;
+        --radius-md: 12px;
+        --shadow-sm: 0 1px 2px rgba(24, 24, 27, 0.06);
+        --shadow-xl: 0 20px 35px rgba(24, 24, 27, 0.22);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+        line-height: 1.6;
+        word-break: keep-all;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .font-display {
+        font-family: 'Gowun Dodum', 'IBM Plex Sans KR', 'Apple SD Gothic Neo', sans-serif;
+      }
+
+      button,
+      input,
+      a {
+        font-family: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:focus-visible,
+      input:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #2563eb;
+        outline-offset: 2px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .container {
+        max-width: 1024px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+
+      @media (min-width: 640px) {
+        .container {
+          padding: 0 24px;
+        }
+      }
+
+      /* Top Header */
+      .site-header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding-top: 14px;
+        padding-bottom: 14px;
+      }
+
+      .brand-link {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text);
+        text-decoration: none;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .main-nav {
+        display: none;
+        align-items: center;
+        gap: 22px;
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .main-nav a {
+        color: var(--text-muted);
+        text-decoration: none;
+        white-space: nowrap;
+        transition: color 0.15s ease;
+      }
+
+      .main-nav a:hover {
+        color: var(--text);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+
+      @media (min-width: 768px) {
+        .main-nav {
+          display: flex;
+        }
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 46px;
+        padding: 10px 18px;
+        border-radius: var(--radius-md);
+        border: 1px solid transparent;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.3;
+        text-decoration: none;
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      }
+
+      .btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .btn-sm {
+        min-height: 42px;
+        padding: 8px 14px;
+        font-size: 14px;
+      }
+
+      .btn-lg {
+        min-height: 54px;
+        padding: 13px 22px;
+        font-size: 18px;
+      }
+
+      .btn-primary {
+        background: var(--blue);
+        color: #ffffff;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: var(--blue-hover);
+      }
+
+      .btn-secondary {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--border-strong);
+      }
+
+      .btn-secondary:hover:not(:disabled) {
+        background: var(--surface-muted);
+      }
+
+      .btn-soft-blue {
+        background: var(--surface-blue);
+        color: var(--blue-dark);
+        border-color: var(--border-blue);
+      }
+
+      .btn-soft-blue:hover:not(:disabled) {
+        background: #dbeafe;
+      }
+
+      .btn-white-blue {
+        background: #ffffff;
+        color: var(--blue-dark);
+        border-color: #93c5fd;
+      }
+
+      .btn-white-blue:hover:not(:disabled) {
+        background: #eff6ff;
+      }
+
+      .btn-emerald {
+        background: var(--surface-emerald);
+        color: var(--emerald);
+        border-color: var(--border-emerald);
+      }
+
+      .btn-emerald:hover:not(:disabled) {
+        background: #d1fae5;
+      }
+
+      .btn-danger {
+        background: var(--red-bg);
+        color: #ffffff;
+      }
+
+      .btn-danger:hover:not(:disabled) {
+        background: var(--red);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-muted);
+        border-color: transparent;
+        min-height: 44px;
+        padding: 8px 12px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .btn-ghost:hover:not(:disabled) {
+        background: var(--surface-muted);
+        color: var(--text);
+      }
+
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 10px;
+        border: none;
+        background: transparent;
+        color: #a1a1aa;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .icon-btn:hover {
+        background: var(--surface-muted);
+        color: var(--text);
+      }
+
+      /* Main Layout */
+      .main-content {
+        padding-top: 28px;
+        padding-bottom: 48px;
+      }
+
+      .hero-title {
+        margin: 0;
+        font-size: clamp(26px, 4vw, 36px);
+        line-height: 1.3;
+        letter-spacing: -0.02em;
+        color: var(--text);
+      }
+
+      .hero-subtitle {
+        margin: 10px 0 0;
+        max-width: 680px;
+        font-size: 18px;
+        color: var(--text-muted);
+      }
+
+      .audience-bar {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 12px 14px;
+      }
+
+      .audience-label {
+        font-size: 15px;
+        font-weight: 700;
+        color: #3f3f46;
+        padding: 0 6px;
+      }
+
+      .segmented {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px;
+        background: var(--surface-muted);
+        padding: 4px;
+        border-radius: var(--radius-md);
+      }
+
+      .segmented-btn {
+        min-height: 42px;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 9px;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 16px;
+        font-weight: 700;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .segmented-btn.active {
+        background: #ffffff;
+        color: var(--blue-hover);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* Workspace Card */
+      .workspace-card {
+        margin-top: 24px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+      }
+
+      @media (min-width: 640px) {
+        .workspace-card {
+          padding: 32px;
+        }
+      }
+
+      /* Dropzone */
+      .dropzone {
+        border: 2px dashed var(--border-strong);
+        border-radius: var(--radius-lg);
+        background: #fafafa;
+        padding: 28px 20px;
+        text-align: center;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+      }
+
+      .dropzone.dragging {
+        border-color: var(--blue);
+        background: var(--surface-blue);
+      }
+
+      .dropzone-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: var(--surface-blue);
+        color: var(--blue);
+      }
+
+      .dropzone h2 {
+        margin: 14px 0 0;
+        font-size: 24px;
+      }
+
+      .dropzone p {
+        margin: 8px 0 0;
+        font-size: 16px;
+        color: var(--text-muted);
+      }
+
+      .upload-actions {
+        margin: 22px auto 0;
+        max-width: 560px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      @media (min-width: 640px) {
+        .upload-actions {
+          flex-direction: row;
+        }
+        .upload-actions > button {
+          flex: 1;
+        }
+      }
+
+      /* Uploaded Preview Bar */
+      .uploaded-bar {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: #fafafa;
+        padding: 16px;
+      }
+
+      @media (min-width: 640px) {
+        .uploaded-bar {
+          flex-direction: row;
+          align-items: center;
+        }
+      }
+
+      .uploaded-thumb {
+        width: 100%;
+        height: 144px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: #f4f4f5;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+
+      @media (min-width: 640px) {
+        .uploaded-thumb {
+          width: 190px;
+        }
+      }
+
+      .uploaded-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      .uploaded-controls {
+        flex: 1;
+      }
+
+      .uploaded-controls h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
+
+      .btn-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      /* Summary & Status Boxes */
+      .box {
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        border: 1px solid var(--border);
+      }
+
+      @media (min-width: 640px) {
+        .box {
+          padding: 24px;
+        }
+      }
+
+      .box-blue {
+        background: var(--surface-blue-soft);
+        border-color: var(--border-blue);
+      }
+
+      .box-muted {
+        background: #fafafa;
+        border-color: var(--border);
+      }
+
+      .box-amber {
+        background: var(--surface-amber);
+        border-color: var(--border-amber);
+      }
+
+      .box-red {
+        background: var(--surface-red);
+        border-color: var(--border-red);
+      }
+
+      .box-white {
+        background: #ffffff;
+        border-color: var(--border-blue);
+      }
+
+      .meta-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--blue-dark);
+      }
+
+      .summary-title {
+        margin: 8px 0 0;
+        font-size: clamp(22px, 3vw, 28px);
+        line-height: 1.3;
+      }
+
+      .summary-conclusion {
+        margin: 12px 0 0;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 1.65;
+        color: var(--text);
+      }
+
+      /* Reference Helper Photo Card */
+      .helper-photo-card {
+        margin-top: 20px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-blue);
+        background: #ffffff;
+        padding: 16px;
+      }
+
+      .helper-photo-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .helper-photo-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--blue-dark);
+      }
+
+      .helper-photo-frame {
+        margin-top: 12px;
+        overflow: hidden;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: var(--surface-muted);
+      }
+
+      .helper-photo-frame img {
+        display: block;
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+      }
+
+      .helper-photo-caption {
+        margin: 10px 0 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: #27272a;
+      }
+
+      /* Audio Player Bar */
+      .audio-bar {
+        margin-top: 18px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        background: #ffffff;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      @media (min-width: 640px) {
+        .audio-bar {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+      }
+
+      .audio-bar-compact {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .audio-status-err {
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--red);
+      }
+
+      /* Simpler Explanation Sub-panel */
+      .simpler-panel {
+        margin-top: 18px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-blue);
+        background: #ffffff;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .one-action-box {
+        border-radius: var(--radius-md);
+        background: var(--surface-blue);
+        padding: 16px;
+      }
+
+      .one-action-box p {
+        margin: 0;
+      }
+
+      /* Detail Sections */
+      .detail-section {
+        border-top: 1px solid var(--border);
+        padding-top: 26px;
+        margin-top: 28px;
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+      }
+
+      .step-list {
+        list-style: none;
+        margin: 18px 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .step-btn {
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: #fafafa;
+        text-align: left;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .step-btn:hover {
+        background: #f4f4f5;
+      }
+
+      .step-btn.checked {
+        border-color: var(--border-emerald);
+        background: var(--surface-emerald);
+      }
+
+      .step-num {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--blue);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .step-btn.checked .step-num {
+        background: #047857;
+      }
+
+      .keyinfo-grid {
+        margin: 18px 0 0;
+        display: grid;
+        gap: 12px;
+      }
+
+      @media (min-width: 640px) {
+        .keyinfo-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      .keyinfo-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: #fafafa;
+        padding: 16px;
+      }
+
+      .caution-list {
+        list-style: none;
+        margin: 14px 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .caution-list li {
+        display: flex;
+        gap: 10px;
+        font-size: 18px;
+        line-height: 1.6;
+      }
+
+      .glossary-row {
+        padding: 16px 0;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .glossary-row:last-child {
+        border-bottom: none;
+      }
+
+      @media (min-width: 640px) {
+        .glossary-row {
+          flex-direction: row;
+          gap: 16px;
+        }
+      }
+
+      /* Forms & Inputs */
+      .search-form {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      @media (min-width: 640px) {
+        .search-form {
+          flex-direction: row;
+        }
+      }
+
+      .text-input {
+        min-height: 52px;
+        width: 100%;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-strong);
+        background: #ffffff;
+        padding: 12px 16px;
+        font-size: 17px;
+        color: var(--text);
+      }
+
+      .text-input::placeholder {
+        color: #a1a1aa;
+      }
+
+      .word-chips {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .word-chip {
+        min-height: 44px;
+        padding: 8px 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: #fafafa;
+        color: var(--text);
+        font-size: 16px;
+        font-weight: 600;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .word-chip:hover {
+        background: var(--surface-blue);
+        border-color: #93c5fd;
+      }
+
+      /* Grids */
+      .cards-grid-2 {
+        margin-top: 16px;
+        display: grid;
+        gap: 14px;
+      }
+
+      @media (min-width: 640px) {
+        .cards-grid-2 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      .cards-grid-3 {
+        margin-top: 20px;
+        display: grid;
+        gap: 16px;
+      }
+
+      @media (min-width: 640px) {
+        .cards-grid-3 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .cards-grid-3 {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      .item-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        background: #ffffff;
+        padding: 16px;
+      }
+
+      .history-btn {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        width: 100%;
+        border: none;
+        background: transparent;
+        padding: 0;
+        text-align: left;
+      }
+
+      .history-thumb {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      .reminder-grid {
+        margin-top: 16px;
+        display: grid;
+        gap: 14px;
+      }
+
+      @media (min-width: 640px) {
+        .reminder-grid {
+          grid-template-columns: repeat(12, minmax(0, 1fr));
+        }
+        .col-5 {
+          grid-column: span 5;
+        }
+        .col-4 {
+          grid-column: span 4;
+        }
+        .col-3 {
+          grid-column: span 3;
+        }
+        .col-2 {
+          grid-column: span 2;
+        }
+      }
+
+      .checkbox-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 48px;
+        padding: 10px 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: #ffffff;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .checkbox-card input {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--blue);
+      }
+
+      .reminder-list {
+        list-style: none;
+        margin: 16px 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .reminder-item {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: #fafafa;
+        padding: 16px;
+      }
+
+      .reminder-item.active {
+        border-color: var(--border-blue);
+        background: var(--surface-blue-soft);
+      }
+
+      @media (min-width: 640px) {
+        .reminder-item {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+      }
+
+      /* Modals */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        background: rgba(9, 9, 11, 0.8);
+      }
+
+      .modal-panel {
+        position: relative;
+        width: 100%;
+        max-width: 680px;
+        max-height: 90vh;
+        overflow: auto;
+        border-radius: var(--radius-lg);
+        background: #ffffff;
+        padding: 20px;
+        box-shadow: var(--shadow-xl);
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(24, 24, 27, 0.85);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .spinner {
+        width: 24px;
+        height: 24px;
+        border: 3px solid #dbeafe;
+        border-top-color: var(--blue);
+        border-radius: 50%;
+        animation: spin 0.85s linear infinite;
+        display: inline-block;
+      }
+
+      .spinner-lg {
+        width: 48px;
+        height: 48px;
+        border-width: 4px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        .spinner {
+          animation: none;
+        }
+      }
+
+      .site-footer {
+        margin-top: 48px;
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+        padding: 24px 0;
+        font-size: 14px;
+        color: var(--text-muted);
+      }
+
+      .footer-inner {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      @media (min-width: 640px) {
+        .footer-inner {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+      }
+    </style>
+  <script src="/_aistudio-iframe.js?v=29045eb3"></script><script src="https://cdn.jsdelivr.net/npm/html2canvas-pro@2.0.4"></script><style>.aistudio-hover-highlight { box-shadow: inset 0 0 0 0.5px white, inset 0 0 0 1.5px rgba(128,128,128,0.6) !important; }.aistudio-active-highlight { outline: 2px solid #87a9ff !important; outline-offset: -2px !important; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(0,0,0,0.3) !important; }.aistudio-generating-blur { filter: blur(5px) grayscale(100%) brightness(28%) !important; transition: filter 0.3s ease; }#aistudio-focus-mode-tag { position: absolute; display: none; align-items: center; gap: 4px; background: #87a9ff; border-radius: 12px; z-index: 10000; padding: 8px; color: #32302c; font-family: Inter, sans-serif; font-size: 14px; font-style: normal; font-weight: 500; line-height: 21px; pointer-events: none; }#aistudio-hover-mode-tag { position: absolute; display: none; align-items: center; gap: 4px; background: rgba(128,128,128,0.6); border-radius: 12px; z-index: 10000; padding: 8px; color: white; font-family: Inter, sans-serif; font-size: 14px; font-style: normal; font-weight: 500; line-height: 21px; pointer-events: none; }.aistudio-img-icon { display: none; vertical-align: middle; pointer-events: auto; cursor: pointer; }.aistudio-img-icon.visible { display: inline-flex; }#aistudio-focus-mode-tag .aistudio-img-icon { position: relative; width: 26px; height: 26px; background: #32302c; border-radius: 6px; margin: -4px -4px -4px 0; }#aistudio-focus-mode-tag .aistudio-img-icon::before { content: ""; position: absolute; top: 4px; left: 4px; width: 18px; height: 18px; background-color: white; -webkit-mask-image: url("https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/edit_fix_auto/default/24px.svg"); -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; mask-image: url("https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/edit_fix_auto/default/24px.svg"); mask-size: contain; mask-repeat: no-repeat; }#aistudio-hover-mode-tag .aistudio-img-icon { position: relative; width: 18px; height: 18px; margin-left: 4px; }#aistudio-hover-mode-tag .aistudio-img-icon::before { content: ""; position: absolute; top: 0; left: 0; width: 18px; height: 18px; background-color: white; -webkit-mask-image: url("https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/edit_fix_auto/default/24px.svg"); -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; mask-image: url("https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/edit_fix_auto/default/24px.svg"); mask-size: contain; mask-repeat: no-repeat; }#aistudio-focus-mode-tag .aistudio-img-icon:hover, #aistudio-hover-mode-tag .aistudio-img-icon:hover { background: #424242 !important; }#aistudio-focus-mode-tag .aistudio-img-icon:active, #aistudio-hover-mode-tag .aistudio-img-icon:active { background: #393f51 !important; }</style></head>
+  <body>
+    <input id="file-input" type="file" accept="image/*" class="hidden" aria-label="안내문 사진 파일 선택">
+
+    <!-- Header -->
+    <header class="site-header" id="top">
+      <div class="container header-inner">
+        <a href="#top" class="brand-link font-display">쉬운 말 안내</a>
+        <nav class="main-nav" aria-label="주요 메뉴">
+          <a href="#workspace">사진 올리기</a>
+          <a href="#word-search">단어 검색</a>
+          <a href="#wordbook">내 단어장</a>
+          <a href="#history">최근 안내문</a>
+          <a href="#reminders">알림 설정</a>
+        </nav>
+        <div class="btn-row" style="gap: 8px; flex-shrink: 0;">
+          <button id="download-html-btn" type="button" class="btn btn-secondary btn-sm">
+            index.html 저장
+          </button>
+          <button id="header-upload-btn" type="button" class="btn btn-primary btn-sm">
+            새 사진 올리기
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container main-content">
+      <!-- Hero & Audience Selector -->
+      <section>
+        <h1 class="hero-title font-display">
+          어려운 안내문이나 단어를 올리면 쉬운 말과 소리로 바로 알려드려요
+        </h1>
+        <p class="hero-subtitle">
+          안내문 사진을 올리면 사진 바로 아래에 핵심 내용을 요약해 드리고, 자동으로 음성을 들려드립니다.
+        </p>
+
+        <div class="audience-bar">
+          <span class="audience-label">누구에게 맞춰 드릴까요?</span>
+          <div class="segmented" role="group" aria-label="설명 수준 선택">
+            <button type="button" class="segmented-btn active" data-audience="senior" aria-pressed="true">
+              어르신 맞춤
+            </button>
+            <button type="button" class="segmented-btn" data-audience="child" aria-pressed="false">
+              어린이 맞춤
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Single Unified Workspace -->
+      <section id="workspace" class="workspace-card">
+        <!-- 1. Photo Upload / Preview -->
+        <div id="dropzone" class="dropzone">
+          <div class="dropzone-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+              <circle cx="9" cy="9" r="2"></circle>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+            </svg>
+          </div>
+          <h2>여기에 안내문 사진을 올려 주세요</h2>
+          <p>약 봉투, 아파트 공고문, 제품 설명서를 올리시면 바로 아래에 핵심 내용을 요약해 드려요.</p>
+          <div class="upload-actions">
+            <button id="pick-file-btn" type="button" class="btn btn-primary btn-lg">
+              <span>사진 고르기 / 폰 카메라</span>
+            </button>
+            <button id="open-camera-btn" type="button" class="btn btn-secondary btn-lg">
+              <span>카메라로 바로 찍기</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="uploaded-bar" class="uploaded-bar hidden">
+          <div class="uploaded-thumb">
+            <img id="uploaded-thumb-img" src="" alt="사용자가 올린 안내문 사진">
+          </div>
+          <div class="uploaded-controls">
+            <h2>올리신 안내문 사진</h2>
+            <div class="btn-row">
+              <button id="zoom-uploaded-btn" type="button" class="btn btn-secondary">
+                사진 크게 보기
+              </button>
+              <button id="change-photo-btn" type="button" class="btn btn-secondary">
+                다른 사진 고르기
+              </button>
+              <button id="reset-photo-btn" type="button" class="btn btn-secondary">
+                사진 지우기
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Core Summary Area -->
+        <div id="photo-summary-area" style="margin-top: 20px;"></div>
+
+        <!-- 3. Word Search & Wordbook -->
+        <div id="word-search" class="detail-section">
+          <h2 class="section-heading">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+            <span>모르는 단어 바로 검색하기</span>
+          </h2>
+          <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 16px;">
+            어려운 단어를 직접 적거나 마이크 버튼을 눌러 말로 물어보시면 바로 뜻과 소리로 알려드려요.
+          </p>
+
+          <form id="word-search-form" class="search-form">
+            <label for="word-lookup-input" class="sr-only">어려운 어휘 입력</label>
+            <input id="word-lookup-input" type="text" class="text-input" placeholder="예: 단수, 경구 투여, 탈거, 연체료" style="flex: 1;" value="">
+            <div class="btn-row" style="flex-shrink: 0;">
+              <button id="voice-search-btn" type="button" class="btn btn-secondary btn-lg">
+                말로 검색
+              </button>
+              <button id="word-submit-btn" type="submit" class="btn btn-primary btn-lg">
+                뜻 찾기
+              </button>
+            </div>
+          </form>
+
+          <p id="voice-status-msg" class="hidden" style="margin: 10px 0 0; font-weight: 700; color: var(--blue-dark);" role="status"></p>
+          <p id="voice-error-msg" class="hidden" style="margin: 10px 0 0; font-size: 14px; font-weight: 600; color: var(--red);" role="alert"></p>
+
+          <div style="margin-top: 16px;">
+            <p style="margin: 0; font-size: 14px; font-weight: 600; color: var(--text-muted);">
+              자주 헷갈리는 말 바로 눌러 보기
+            </p>
+            <div id="popular-words" class="word-chips"></div>
+          </div>
+
+          <div id="word-result-area" style="margin-top: 22px;"></div>
+
+          <!-- 내 단어장 (Directly below word search) -->
+          <div id="wordbook" class="detail-section"></div>
+        </div>
+      </section>
+
+      <!-- Recent History Section -->
+      <section id="history" style="margin-top: 44px; border-top: 1px solid var(--border); padding-top: 32px;"></section>
+
+      <!-- Bottom Reminder Settings Panel -->
+      <section id="reminders" style="margin-top: 44px; border-top: 1px solid var(--border); padding-top: 32px;"></section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div>
+          <strong style="color: var(--text);">쉬운 말 안내</strong>
+          <span style="display: block; margin-top: 4px;">
+            올리신 안내문 사진은 쉬운 설명을 만드는 데만 쓰이며, 중요한 약 복용이나 계약은 보호자나 담당자에게 한 번 더 확인하세요.
+          </span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px; flex-shrink: 0;">
+          <button id="footer-download-html-btn" type="button" class="btn btn-secondary btn-sm">
+            index.html 파일 내려받기
+          </button>
+          <span id="download-feedback" class="hidden" style="font-size: 13px; font-weight: 600; color: var(--emerald);" role="status"></span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Camera Modal -->
+    <div id="camera-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="카메라로 안내문 찍기">
+      <div class="modal-panel">
+        <button id="close-camera-btn" type="button" class="modal-close" aria-label="카메라 닫기">✕</button>
+        <h2 style="margin: 0 0 8px; font-size: 22px;">카메라로 안내문 찍기</h2>
+        <p style="margin: 0 0 14px; color: var(--text-muted);">
+          글자가 화면 안에 잘 들어오도록 맞춘 뒤 아래 촬영 버튼을 눌러 주세요.
+        </p>
+        <div style="border-radius: 12px; overflow: hidden; background: #18181b; text-align: center;">
+          <video id="camera-video" autoplay="" playsinline="" muted="" style="width: 100%; max-height: 55vh; object-fit: contain;"></video>
+        </div>
+        <p id="camera-error" class="hidden" style="margin: 12px 0 0; color: var(--red); font-weight: 600;"></p>
+        <div class="btn-row" style="margin-top: 16px;">
+          <button id="capture-photo-btn" type="button" class="btn btn-primary btn-lg" style="flex: 1;">
+            이대로 사진 찍기
+          </button>
+          <button id="camera-fallback-btn" type="button" class="btn btn-secondary btn-lg">
+            파일에서 사진 고르기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fullscreen Zoom Modal -->
+    <div id="zoom-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="사진 크게 보기">
+      <div class="modal-panel" style="max-width: 820px; text-align: center;">
+        <button id="close-zoom-btn" type="button" class="modal-close" aria-label="크게 보기 닫기">✕</button>
+        <img id="zoom-modal-img" src="" alt="크게 보기 사진" style="max-width: 100%; max-height: 78vh; border-radius: 12px; object-fit: contain;">
+        <p id="zoom-modal-caption" class="hidden" style="margin: 12px 0 0; font-weight: 600; color: var(--text);"></p>
+      </div>
+    </div>
+
+    <!-- Active Reminder Alert Modal -->
+    <div id="reminder-alert-modal" class="modal-backdrop hidden" role="alertdialog" aria-modal="true" aria-labelledby="active-alert-heading">
+      <div class="modal-panel" style="max-width: 440px;">
+        <p style="margin: 0; font-size: 14px; font-weight: 700; color: var(--blue-dark);">쉬운 말 안내 알림</p>
+        <h3 id="active-alert-heading" style="margin: 4px 0 0; font-size: 24px;">알림 시간이에요!</h3>
+        <div class="one-action-box" style="margin-top: 16px;">
+          <p id="active-alert-title" style="font-size: 20px; font-weight: 700;"></p>
+          <p id="active-alert-time" style="margin-top: 4px; color: var(--text-muted);"></p>
+        </div>
+        <div class="btn-row" style="margin-top: 18px;">
+          <button id="active-alert-replay" type="button" class="btn btn-secondary btn-lg" style="flex: 1;">
+            다시 듣기
+          </button>
+          <button id="active-alert-dismiss" type="button" class="btn btn-primary btn-lg" style="flex: 1;">
+            확인했어요
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        'use strict';
+
+        // ============================================================
+        // Safe Storage Wrapper (works on both file:// and HTTPS)
+        // ============================================================
+        var memoryStore = {};
+        function readStorage(key, fallback) {
+          try {
+            var raw = window.localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : fallback;
+          } catch (e) {
+            return key in memoryStore ? memoryStore[key] : fallback;
+          }
+        }
+        function writeStorage(key, value) {
+          memoryStore[key] = value;
+          try {
+            window.localStorage.setItem(key, JSON.stringify(value));
+          } catch (e) {
+            // ignore quota or file:// restrictions
+          }
+        }
+
+        // ============================================================
+        // Keys & Constants
+        // ============================================================
+        var HISTORY_KEY = 'easy_notice_history_v2';
+        var WORDBOOK_KEY = 'easy_notice_wordbook_v2';
+        var REMINDERS_KEY = 'easy_notice_reminders_v2';
+        var REMINDER_SETTINGS_KEY = 'easy_notice_reminder_settings_v2';
+
+        var POPULAR_WORDS = ['단수', '경구 투여', '탈거', '병용 금기', '혼탁수', '기한 내 납부'];
+
+        // ============================================================
+        // Shared Voice & Audio Manager (Korean SpeechSynthesis + Chime)
+        // ============================================================
+        var sharedAudioCtx = null;
+        var activeSpeechPlayerId = null;
+        var speechState = 'idle'; // 'idle' | 'playing' | 'paused'
+        var speechRate = 0.85;
+        var speechPlayers = new Map();
+
+        function getAudioCtx() {
+          if (sharedAudioCtx) return sharedAudioCtx;
+          var Ctx = window.AudioContext || window.webkitAudioContext;
+          if (Ctx) {
+            sharedAudioCtx = new Ctx();
+          }
+          return sharedAudioCtx;
+        }
+
+        function unlockAudio() {
+          var ctx = getAudioCtx();
+          if (ctx && ctx.state === 'suspended') {
+            ctx.resume().catch(function () {});
+          }
+        }
+
+        function stopAllVoice(exceptId) {
+          if ('speechSynthesis' in window) {
+            try {
+              window.speechSynthesis.cancel();
+            } catch (e) {}
+          }
+          activeSpeechPlayerId = null;
+          speechState = 'idle';
+          speechPlayers.forEach(function (player, id) {
+            if (id !== exceptId) {
+              player.updateUI();
+            }
+          });
+        }
+
+        function speakKorean(text, rate, playerId, onDone) {
+          if (!('speechSynthesis' in window) || !text) {
+            return false;
+          }
+          stopAllVoice(playerId);
+          var synth = window.speechSynthesis;
+          var utter = new SpeechSynthesisUtterance(text);
+          utter.lang = 'ko-KR';
+          utter.rate = rate || speechRate;
+          utter.pitch = 1.0;
+
+          var voices = synth.getVoices ? synth.getVoices() : [];
+          var koVoice =
+            voices.find(function (v) {
+              return v.lang.toLowerCase().indexOf('ko') === 0 && v.localService;
+            }) ||
+            voices.find(function (v) {
+              return v.lang.toLowerCase().indexOf('ko') === 0;
+            });
+          if (koVoice) {
+            utter.voice = koVoice;
+          }
+
+          activeSpeechPlayerId = playerId;
+          speechState = 'playing';
+
+          utter.onend = function () {
+            if (activeSpeechPlayerId === playerId) {
+              activeSpeechPlayerId = null;
+              speechState = 'idle';
+              if (onDone) onDone();
+            }
+          };
+          utter.onerror = function () {
+            if (activeSpeechPlayerId === playerId) {
+              activeSpeechPlayerId = null;
+              speechState = 'idle';
+              if (onDone) onDone();
+            }
+          };
+
+          try {
+            synth.speak(utter);
+            return true;
+          } catch (e) {
+            activeSpeechPlayerId = null;
+            speechState = 'idle';
+            return false;
+          }
+        }
+
+        function playGentleChime() {
+          try {
+            unlockAudio();
+            var ctx = getAudioCtx();
+            if (!ctx) return;
+            var now = ctx.currentTime;
+            [523.25, 659.25, 783.99].forEach(function (freq, idx) {
+              var osc = ctx.createOscillator();
+              var gain = ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, now + idx * 0.16);
+              gain.gain.setValueAtTime(0.001, now + idx * 0.16);
+              gain.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.16 + 0.03);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.16 + 0.45);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now + idx * 0.16);
+              osc.stop(now + idx * 0.16 + 0.5);
+            });
+          } catch (e) {}
+        }
+
+        var playerSeq = 0;
+        function createAudioPlayerBar(options) {
+          var id = 'player-' + (++playerSeq);
+          var text = options.text || '';
+          var label = options.label || '소리로 듣기';
+          var compact = Boolean(options.compact);
+          var autoPlay = Boolean(options.autoPlay);
+
+          var wrapper = document.createElement('div');
+          wrapper.className = compact ? 'audio-bar-compact' : 'audio-bar';
+
+          var leftGroup = document.createElement('div');
+          leftGroup.className = 'btn-row';
+
+          var mainBtn = document.createElement('button');
+          mainBtn.type = 'button';
+          mainBtn.className = compact
+            ? 'btn btn-soft-blue btn-sm'
+            : 'btn btn-primary btn-lg';
+
+          var replayBtn = document.createElement('button');
+          replayBtn.type = 'button';
+          replayBtn.className = compact
+            ? 'btn btn-secondary btn-sm hidden'
+            : 'btn btn-secondary btn-lg hidden';
+          replayBtn.textContent = '처음부터';
+
+          var stopBtn = document.createElement('button');
+          stopBtn.type = 'button';
+          stopBtn.className = compact
+            ? 'btn btn-secondary btn-sm hidden'
+            : 'btn btn-secondary btn-lg hidden';
+          stopBtn.textContent = '그만 듣기';
+
+          leftGroup.appendChild(mainBtn);
+          if (!compact) leftGroup.appendChild(replayBtn);
+          leftGroup.appendChild(stopBtn);
+          wrapper.appendChild(leftGroup);
+
+          var speedGroup = null;
+          var slowBtn = null;
+          var normalBtn = null;
+          if (!compact) {
+            speedGroup = document.createElement('div');
+            speedGroup.className = 'segmented';
+            speedGroup.setAttribute('role', 'group');
+            speedGroup.setAttribute('aria-label', '읽어주는 빠르기 선택');
+
+            slowBtn = document.createElement('button');
+            slowBtn.type = 'button';
+            slowBtn.className = 'segmented-btn' + (speechRate === 0.85 ? ' active' : '');
+            slowBtn.textContent = '천천히';
+
+            normalBtn = document.createElement('button');
+            normalBtn.type = 'button';
+            normalBtn.className = 'segmented-btn' + (speechRate === 1 ? ' active' : '');
+            normalBtn.textContent = '보통 속도';
+
+            slowBtn.addEventListener('click', function () {
+              speechRate = 0.85;
+              updateAllPlayersUI();
+            });
+            normalBtn.addEventListener('click', function () {
+              speechRate = 1;
+              updateAllPlayersUI();
+            });
+
+            speedGroup.appendChild(slowBtn);
+            speedGroup.appendChild(normalBtn);
+            wrapper.appendChild(speedGroup);
+          }
+
+          var errLine = document.createElement('p');
+          errLine.className = 'audio-status-err hidden';
+
+          function updateUI() {
+            var isMine = activeSpeechPlayerId === id;
+            var playing = isMine && speechState === 'playing';
+            var paused = isMine && speechState === 'paused';
+
+            if (playing) {
+              mainBtn.textContent = '잠시 멈추기';
+              if (compact) mainBtn.className = 'btn btn-primary btn-sm';
+            } else if (paused) {
+              mainBtn.textContent = '이어서 듣기';
+              if (compact) mainBtn.className = 'btn btn-soft-blue btn-sm';
+            } else {
+              mainBtn.textContent = '🔊 ' + label;
+              if (compact) mainBtn.className = 'btn btn-soft-blue btn-sm';
+            }
+
+            replayBtn.classList.toggle('hidden', !(playing || paused));
+            stopBtn.classList.toggle('hidden', !(playing || paused));
+
+            if (slowBtn && normalBtn) {
+              slowBtn.classList.toggle('active', speechRate === 0.85);
+              normalBtn.classList.toggle('active', speechRate === 1);
+            }
+          }
+
+          function updateAllPlayersUI() {
+            speechPlayers.forEach(function (p) {
+              p.updateUI();
+            });
+          }
+
+          function startFromBeginning() {
+            unlockAudio();
+            if (!('speechSynthesis' in window)) {
+              errLine.textContent = '이 브라우저에서는 음성 읽기 기능을 지원하지 않습니다.';
+              errLine.classList.remove('hidden');
+              return;
+            }
+            errLine.classList.add('hidden');
+            var ok = speakKorean(text, speechRate, id, function () {
+              updateAllPlayersUI();
+            });
+            if (!ok) {
+              errLine.textContent = '음성 재생을 시작할 수 없어요. 아래 버튼을 다시 눌러 주세요.';
+              errLine.classList.remove('hidden');
+            }
+            updateAllPlayersUI();
+          }
+
+          mainBtn.addEventListener('click', function () {
+            var isMine = activeSpeechPlayerId === id;
+            if (isMine && speechState === 'playing') {
+              window.speechSynthesis.pause();
+              speechState = 'paused';
+              updateAllPlayersUI();
+              return;
+            }
+            if (isMine && speechState === 'paused') {
+              window.speechSynthesis.resume();
+              speechState = 'playing';
+              updateAllPlayersUI();
+              return;
+            }
+            startFromBeginning();
+          });
+
+          replayBtn.addEventListener('click', startFromBeginning);
+          stopBtn.addEventListener('click', function () {
+            stopAllVoice();
+            updateAllPlayersUI();
+          });
+
+          speechPlayers.set(id, { updateUI: updateUI });
+          updateUI();
+
+          var container = document.createElement('div');
+          container.appendChild(wrapper);
+          container.appendChild(errLine);
+
+          if (autoPlay && text.trim()) {
+            setTimeout(function () {
+              startFromBeginning();
+            }, 60);
+          }
+
+          return container;
+        }
+
+        // ============================================================
+        // Korean Easy-Read Glossary (60+ Common Notice / Manual Terms)
+        // ============================================================
+        var GLOSSARY = [
+          {
+            word: '단수',
+            aliases: ['단수예정', '단수안내'],
+            easyWord: '수도꼭지에서 물이 잠깐 안 나오는 것',
+            seniorMeaning: '물탱크 청소나 수도관 공사를 하기 위해 일정 시간 동안 집에 물이 나오지 않게 잠그는 것을 말합니다.',
+            childMeaning: '물탱크를 청소하거나 고치는 동안 집 수도꼭지에서 물이 잠깐 안 나오는 거예요.',
+            seniorTip: '물이 끊기기 전날 밤이나 아침 일찍 큰 통에 마실 물과 씻을 물을 미리 받아 두시면 됩니다.',
+            childTip: '물이 안 나오기 전에 어른과 함께 마실 물과 손 씻을 물을 미리 받아 두어야 해요.',
+            examples: ['금일 오전 9시부터 단수 예정입니다. → 오늘 아침 9시부터 물이 안 나올 예정이에요.'],
+            related: ['혼탁수', '저수조', '점검'],
+          },
+          {
+            word: '경구 투여',
+            aliases: ['경구투여', '경구 복용', '경구'],
+            easyWord: '입으로 삼켜서 먹는 약',
+            seniorMeaning: '주사를 맞거나 피부에 바르는 약이 아니라, 물과 함께 입으로 삼켜서 먹는 약이라는 뜻입니다.',
+            childMeaning: '주사나 바르는 약이 아니라, 입으로 꿀꺽 삼켜서 먹는 약이라는 뜻이에요.',
+            seniorTip: '따뜻한 물 한 컵과 함께 입으로 드시면 됩니다. 씹지 말고 그대로 삼켜야 하는 약도 있으니 확인하세요.',
+            childTip: '보호자 어른이 주시는 물이랑 같이 입으로 삼켜서 먹으면 돼요.',
+            examples: ['1일 3회 식후 30분 경구 투여하세요. → 하루에 3번, 밥을 먹은 뒤 30분쯤 지나서 입으로 드세요.'],
+            related: ['병용 금기', '복용', '공복'],
+          },
+          {
+            word: '탈거',
+            aliases: ['탈거하여', '탈거 후'],
+            easyWord: '붙어 있던 부품을 떼어 내거나 빼내는 것',
+            seniorMeaning: '세탁기 거름망이나 에어컨 덮개처럼 기계에 끼워져 있던 부품을 손으로 빼내어 분리한다는 뜻입니다.',
+            childMeaning: '기계에 딱 붙어 있던 뚜껑이나 부품을 조심조심 떼어 내는 거예요.',
+            seniorTip: '부품을 빼내실 때는 먼저 전원 코드를 뽑고, 힘으로 꺾지 말고 화살표 방향으로 살살 빼시면 됩니다.',
+            childTip: '기계를 만지기 전에는 꼭 어른을 불러서 전기를 끄고 함께 떼어 내야 해요.',
+            examples: ['필터를 탈거하여 물로 세척하세요. → 먼지 거름망을 빼내서 물로 깨끗이 씻으세요.'],
+            related: ['전원 차단', '점검', '환기'],
+          },
+          {
+            word: '병용 금기',
+            aliases: ['병용금기', '병용'],
+            easyWord: '절대 함께 먹으면 안 되는 약',
+            seniorMeaning: '두 가지 이상의 약을 한꺼번에 같이 먹으면 몸에 큰 탈이 나거나 약 효과가 사라질 수 있어 함께 먹지 말라는 뜻입니다.',
+            childMeaning: '이 약을 먹을 때 다른 특정한 약이랑 같이 먹으면 몸이 아플 수 있어서 절대로 같이 먹으면 안 된다는 뜻이에요.',
+            seniorTip: '지금 드시고 있는 다른 약이나 영양제를 병원과 약국에 꼭 먼저 말씀하시고 같이 먹어도 되는지 확인하세요.',
+            childTip: '다른 약을 먹고 있다면 꼭 엄마, 아빠나 의사 선생님께 먼저 말해야 해요.',
+            examples: ['혈압약과 병용 금기입니다. → 혈압약이랑 절대 한꺼번에 드시면 안 돼요.'],
+            related: ['경구 투여', '부작용', '처방전'],
+          },
+          {
+            word: '혼탁수',
+            aliases: ['혼탁', '탁수'],
+            easyWord: '녹물이나 거품이 섞여 뿌옇고 흐린 물',
+            seniorMeaning: '수도관 청소나 단수 뒤에 물이 다시 나올 때, 관 안에 있던 찌꺼기가 섞여 잠시 맑지 않고 흐리게 나오는 물을 말합니다.',
+            childMeaning: '물이 다시 나올 때 잠깐 뿌옇거나 흙탕물처럼 흐리게 나오는 물이에요.',
+            seniorTip: '바로 마시거나 빨래에 쓰지 마시고, 맑고 투명한 물이 나올 때까지 수도꼭지를 틀어 잠시 흘려보낸 뒤 쓰세요.',
+            childTip: '흐린 물이 나오면 마시지 말고 맑은 물이 나올 때까지 잠깐 물을 틀어 두어야 해요.',
+            examples: ['단수 후 일시적으로 혼탁수가 발생할 수 있습니다. → 물이 다시 나온 뒤 잠깐 흐린 물이 나올 수 있어요.'],
+            related: ['단수', '점검', '고지서'],
+          },
+          {
+            word: '기한 내 납부',
+            aliases: ['기한내납부', '납부 기한', '납기', '납부'],
+            easyWord: '정해진 날짜가 지나기 전에 돈을 내는 것',
+            seniorMeaning: '전기요금, 관리비, 세금 등을 안내문에 적힌 마지막 날짜까지 늦지 않게 낸다는 뜻입니다.',
+            childMeaning: '약속한 마지막 날이 지나기 전에 돈을 제때 내야 한다는 뜻이에요.',
+            seniorTip: '고지서에 적힌 마감 날짜를 달력에 표시해 두시고, 그날이 지나 추가 요금이 붙기 전에 은행이나 자동이체로 내세요.',
+            childTip: '안내문에 적힌 마지막 날짜를 어른께 꼭 보여드려야 해요.',
+            examples: ['기한 내 납부하지 않으면 연체료가 부과됩니다. → 정해진 날까지 내지 않으면 늦은 만큼 돈을 더 내야 해요.'],
+            related: ['연체료', '자동이체', '체납'],
+          },
+          {
+            word: '연체료',
+            aliases: ['가산금', '지연이자'],
+            easyWord: '내는 날짜를 넘겨서 추가로 더 내는 돈',
+            seniorMeaning: '관리비나 요금을 정해진 날까지 내지 못하고 늦었을 때 벌금처럼 조금 더 붙어서 내야 하는 돈입니다.',
+            childMeaning: '돈을 내야 하는 날보다 늦게 내서 조금 더 붙는 돈이에요.',
+            seniorTip: '마감 날짜 전날까지 내시거나 자동이체를 신청해 두시면 연체료가 붙지 않습니다.',
+            childTip: '약속 날짜보다 늦지 않게 내면 돈을 더 안 내도 돼요.',
+            examples: ['납부 기한 경과 시 연체료가 발생합니다. → 내는 날이 지나면 돈을 조금 더 내야 해요.'],
+            related: ['기한 내 납부', '체납', '고지서'],
+          },
+          {
+            word: '부작용',
+            aliases: ['이상반응'],
+            easyWord: '약을 먹거나 치료한 뒤 생기는 원치 않는 아픈 증상',
+            seniorMeaning: '병을 고치려고 약을 먹었는데, 그와 별개로 속이 메스껍거나 졸리거나 어지러운 것처럼 몸에 불편한 증상이 나타나는 것입니다.',
+            childMeaning: '약을 먹었는데 배가 아프거나 졸린 것처럼 예상치 못한 불편한 느낌이 생기는 거예요.',
+            seniorTip: '두드러기, 심한 어지럼증, 숨 가쁨 같은 증상이 생기면 약을 멈추고 바로 병원이나 약국에 연락하세요.',
+            childTip: '약을 먹고 몸이 가렵거나 아프면 바로 어른께 말씀드려야 해요.',
+            examples: ['졸음 등의 부작용이 나타날 수 있습니다. → 약을 드시면 잠이 많이 올 수 있어요.'],
+            related: ['병용 금기', '경구 투여', '처방전'],
+          },
+          {
+            word: '공복',
+            aliases: ['빈속', '식전'],
+            easyWord: '밥을 먹기 전 비어 있는 속',
+            seniorMeaning: '아침에 일어나서 아무것도 먹지 않았거나, 식사한 지 오래되어 뱃속이 비어 있는 상태를 말합니다.',
+            childMeaning: '밥이나 간식을 먹기 전이라 배 속이 텅 비어 있는 때예요.',
+            seniorTip: '보통 식사 30분~1시간 전이나 식사 후 2시간쯤 지나 속이 비었을 때 물과 함께 드시면 됩니다.',
+            childTip: '밥 먹기 전에 먹는 약인지 꼭 어른과 확인하고 먹어야 해요.',
+            examples: ['취침 전 공복에 복용하세요. → 잠자기 전 속이 비어 있을 때 드세요.'],
+            related: ['복용', '금식', '경구 투여'],
+          },
+          {
+            word: '금식',
+            easyWord: '물이나 음식을 먹지 않고 속을 비워 두는 것',
+            seniorMeaning: '건강검진이나 내시경, 수술 등을 안전하게 받기 위해 정해진 시간부터 아무것도 먹지 않는 것입니다.',
+            childMeaning: '병원 검사를 안전하게 받기 위해 잠깐 동안 밥도 간식도 먹지 않고 참는 거예요.',
+            seniorTip: '전날 밤 몇 시부터 굶어야 하는지 확인하시고, 사탕이나 커피·우유도 드시면 안 됩니다. 혈압약은 병원에 미리 물어보세요.',
+            childTip: '검사 전에는 사탕이나 음료수도 먹으면 안 돼요.',
+            examples: ['검사 전날 밤 9시부터 금식하세요. → 전날 밤 9시부터는 물과 음식을 드시지 마세요.'],
+            related: ['공복', '지참', '처방전'],
+          },
+          {
+            word: '복용',
+            aliases: ['투약', '복약', '식후'],
+            easyWord: '약을 먹는 것',
+            seniorMeaning: '병원이나 약국에서 받은 약을 정해진 시간과 횟수에 맞게 입으로 챙겨 먹는 것을 말합니다.',
+            childMeaning: '아픈 곳이 나으려고 약을 알맞게 챙겨 먹는 거예요.',
+            seniorTip: '약 봉투에 적힌 하루 횟수와 한 번에 먹는 알 수를 확인하시고 식사 시간에 맞춰 챙겨 드세요.',
+            childTip: '어른이 정해주신 시간에 맞춰 물이랑 같이 약을 먹어요.',
+            examples: ['1회 1정씩 복용하세요. → 한 번에 알약 한 개씩 드세요.'],
+            related: ['경구 투여', '병용 금기', '부작용'],
+          },
+          {
+            word: '자동이체',
+            aliases: ['자동 이체', '자동납부'],
+            easyWord: '정해진 날에 통장에서 요금이 저절로 빠져나가는 것',
+            seniorMeaning: '매달 은행에 직접 가지 않아도, 미리 연결해 둔 통장에서 날짜에 맞춰 요금이 알아서 빠져나가는 방법입니다.',
+            childMeaning: '매달 은행에 안 가도 정해진 날에 통장에서 돈이 저절로 내어지는 거예요.',
+            seniorTip: '돈이 빠져나가는 날 하루 전쯤 통장에 돈이 충분히 들어 있는지 확인하시면 연체되지 않습니다.',
+            childTip: '통장에서 알아서 요금이 내어져서 편해요.',
+            examples: ['자동이체 계좌의 잔액을 확인하세요. → 돈이 빠져나가는 통장에 돈이 충분한지 확인하세요.'],
+            related: ['기한 내 납부', '연체료', '고지서'],
+          },
+          {
+            word: '전원 차단',
+            aliases: ['전원차단', '전원 분리', '콘센트'],
+            easyWord: '전기 코드를 뽑거나 스위치를 끄는 것',
+            seniorMeaning: '감전이나 고장을 막기 위해 기기 스위치를 끄고 벽에 꽂힌 전기 플러그를 완전히 뽑아 놓는 것입니다.',
+            childMeaning: '전기가 통하지 않게 기계 스위치를 끄고 콘센트에서 전기선을 빼 놓는 거예요.',
+            seniorTip: '기계 안을 닦거나 부품을 빼실 때는 반드시 마른 손으로 전기 코드를 먼저 뽑은 뒤 만지세요.',
+            childTip: '전기 코드는 어른이 마른 손으로 뽑도록 꼭 도와달라고 하세요.',
+            examples: ['청소 전 반드시 전원을 차단하세요. → 닦기 전에 꼭 전기 코드를 먼저 뽑으세요.'],
+            related: ['탈거', '점검', '환기'],
+          },
+          {
+            word: '지참',
+            aliases: ['구비서류', '신분증 지참'],
+            easyWord: '챙겨서 가지고 가는 것',
+            seniorMeaning: '관공서나 병원에 갈 때 신분증이나 서류처럼 필요한 물건을 빠뜨리지 않고 손에 들고 간다는 뜻입니다.',
+            childMeaning: '집에서 나갈 때 필요한 준비물을 잊지 않고 챙겨 가는 거예요.',
+            seniorTip: '신분증, 도장, 처방전 등 챙겨 오라는 물건을 집에서 나서기 전 가방에 넣었는지 한 번 더 확인하세요.',
+            childTip: '가방에 꼭 가져가야 할 물건을 넣었는지 출발 전에 확인해요.',
+            examples: ['방문 시 신분증을 지참해 주세요. → 오실 때 신분증을 꼭 챙겨 오세요.'],
+            related: ['처방전', '고지서', '감면'],
+          },
+          {
+            word: '체납',
+            easyWord: '내야 할 세금이나 요금을 제때 내지 못해 밀린 것',
+            seniorMeaning: '세금, 관리비, 건강보험료처럼 정해진 날까지 내야 하는 돈을 내지 못하고 날짜가 지나 밀려 있는 상태입니다.',
+            childMeaning: '정해진 날까지 내야 할 돈을 아직 내지 못해서 밀려 있는 거예요.',
+            seniorTip: '안내문에 적힌 금액과 전화번호를 확인하셔서 한 번에 내기 어려우면 나누어 낼 수 있는지 물어보세요.',
+            childTip: '안내문에 이 말이 적혀 있으면 어른께 바로 보여드려야 해요.',
+            examples: ['체납 시 이용이 제한될 수 있습니다. → 밀린 요금을 내지 않으면 이용이 잠깐 멈출 수 있어요.'],
+            related: ['기한 내 납부', '연체료', '고지서'],
+          },
+          {
+            word: '고지서',
+            aliases: ['청구서'],
+            easyWord: '내야 할 돈과 날짜를 알려 주는 종이',
+            seniorMeaning: '전기세, 수도세, 세금, 관리비 등을 얼마를 언제까지 어디로 내야 하는지 적어서 집으로 보내 주는 안내 종이입니다.',
+            childMeaning: '집에서 쓴 전기나 물 값으로 돈을 얼마 내야 하는지 적혀 있는 안내 종이예요.',
+            seniorTip: '맨 먼저 내야 할 금액과 마감 날짜, 그리고 이미 자동이체로 빠져나가는지 확인하세요.',
+            childTip: '우편함에 고지서가 오면 잊지 말고 어른께 전해 드려요.',
+            examples: ['고지서를 분실한 경우 재발급받을 수 있습니다. → 안내 종이를 잃어버렸으면 다시 받을 수 있어요.'],
+            related: ['기한 내 납부', '연체료', '자동이체'],
+          },
+          {
+            word: '환기',
+            easyWord: '창문을 열어 집 안 공기를 새로 바꾸는 것',
+            seniorMeaning: '집 안의 답답하거나 냄새나는 공기를 밖으로 내보내고 바깥의 신선한 공기가 들어오도록 창문이나 문을 열어 두는 것입니다.',
+            childMeaning: '창문을 활짝 열어서 방 안 공기를 깨끗하고 시원한 공기로 바꾸는 거예요.',
+            seniorTip: '가스레인지, 락스 세제, 난방기구를 쓰실 때는 창문을 열어 공기가 잘 통하게 해 주세요.',
+            childTip: '냄새가 나거나 답답할 때는 창문을 열어 신선한 공기를 들여보내요.',
+            examples: ['사용 중 충분히 환기하시기 바랍니다. → 쓰시는 동안 창문을 꼭 열어 공기를 갈아 주세요.'],
+            related: ['점검', '전원 차단', '탈거'],
+          },
+          {
+            word: '점검',
+            aliases: ['안전점검', '정기점검'],
+            easyWord: '고장 난 곳이 없는지 꼼꼼히 살펴보는 것',
+            seniorMeaning: '엘리베이터, 가스, 보일러, 수도 등이 고장 없이 안전하게 잘 작동하는지 사람이 와서 미리 확인하고 살피는 것입니다.',
+            childMeaning: '기계나 시설이 고장 나지 않았는지 안전하게 미리 살펴보는 거예요.',
+            seniorTip: '점검 날짜와 시간이 적혀 있다면 그 시간에 집에 계시거나, 외출하셔야 하면 관리사무소에 미리 연락하세요.',
+            childTip: '안전하게 고치고 살피는 날이니까 안내된 시간에는 조심해요.',
+            examples: ['정기 안전 점검을 실시합니다. → 고장 난 곳이 없는지 주기적으로 살펴봅니다.'],
+            related: ['단수', '전원 차단', '탈거'],
+          },
+          {
+            word: '유효기간',
+            aliases: ['사용기한', '소비기한', '유통기한'],
+            easyWord: '안전하게 믿고 쓸 수 있는 마지막 날짜',
+            seniorMeaning: '약이나 음식, 쿠폰, 증명서 등을 탈 없이 안전하게 사용하거나 먹을 수 있도록 정해 둔 마지막 날짜입니다.',
+            childMeaning: '그 날짜가 지나기 전까지만 안전하게 먹거나 쓸 수 있는 마지막 날이에요.',
+            seniorTip: '날짜가 지난 약이나 음식은 아깝더라도 드시지 말고 버리셔야 탈이 나지 않습니다.',
+            childTip: '적혀 있는 날짜가 지났다면 먹지 말고 어른께 보여드려야 해요.',
+            examples: ['유효기간이 지난 약은 폐기하세요. → 날짜가 지난 약은 드시지 말고 버리세요.'],
+            related: ['복용', '부작용', '처방전'],
+          },
+          {
+            word: '처방전',
+            easyWord: '의사 선생님이 약국에 보내는 약 목록 종이',
+            seniorMeaning: '병원에서 진료를 본 뒤, 어떤 약을 얼마나 지어 드려야 하는지 의사 선생님이 적어 주시는 종이입니다.',
+            childMeaning: '병원 의사 선생님이 약국에서 어떤 약을 주어야 하는지 적어 주신 종이예요.',
+            seniorTip: '발급일로부터 며칠 안에 약국에 내셔야 하니, 병원 근처 약국에 바로 가져가서 약을 받으세요.',
+            childTip: '병원에서 받은 종이를 잃어버리지 말고 약국에 가져가야 약을 받을 수 있어요.',
+            examples: ['처방전을 약국에 제출해 주세요. → 병원에서 받은 종이를 약국에 내세요.'],
+            related: ['복용', '경구 투여', '지참'],
+          },
+          {
+            word: '감면',
+            aliases: ['경감', '면제'],
+            easyWord: '내야 할 돈을 깎아 주거나 줄여 주는 것',
+            seniorMeaning: '어르신, 장애인, 국가유공자 등 조건에 맞는 분에게 요금이나 세금의 일부 또는 전부를 덜 내게 해 주는 것입니다.',
+            childMeaning: '내야 할 돈을 조금 깎아 주거나 안 내도 되게 도와주는 거예요.',
+            seniorTip: '감면 대상이 되는지 안내문에 적힌 전화번호나 주민센터에 물어보시고 증명서를 챙겨 신청하세요.',
+            childTip: '돈을 줄여 주는 혜택이 있는지 어른이 확인해 보시는 게 좋아요.',
+            examples: ['복지 할인 감면 신청이 가능합니다. → 요금을 깎아 주는 혜택을 신청할 수 있어요.'],
+            related: ['고지서', '지참', '기한 내 납부'],
+          },
+          {
+            word: '위약금',
+            aliases: ['해지위약금'],
+            easyWord: '약속한 기간 전에 그만둘 때 내는 돈',
+            seniorMeaning: '휴대전화나 인터넷, 회원권 등을 약속한 날짜까지 쓰기로 했는데 중간에 해지할 때 물어내야 하는 돈입니다.',
+            childMeaning: '오래 쓰기로 약속했는데 중간에 그만두면 대신 내야 하는 돈이에요.',
+            seniorTip: '중간에 끊기 전에 고객센터에 전화해서 지금 해지하면 위약금이 얼마 나오는지 꼭 먼저 물어보세요.',
+            childTip: '약속한 기간이 끝나기 전에 그만두면 돈을 내야 할 수 있어요.',
+            examples: ['약정 기간 내 해지 시 위약금이 청구됩니다. → 약속한 날짜 전에 그만두시면 돈을 더 내야 해요.'],
+            related: ['해지', '환불', '기한 내 납부'],
+          },
+          {
+            word: '해지',
+            aliases: ['해약'],
+            easyWord: '계약이나 이용을 완전히 끝내는 것',
+            seniorMeaning: '쓰고 있던 통신 요금제, 보험, 정기 결제 등을 더 이상 쓰지 않겠다고 정식으로 그만두는 것입니다.',
+            childMeaning: '계속 쓰기로 했던 것을 이제 그만 쓰겠다고 끝내는 거예요.',
+            seniorTip: '해지하시기 전에 위약금이 있는지, 마지막 달 요금은 어떻게 계산되는지 안내를 먼저 들어 보세요.',
+            childTip: '그만둘 때는 어른이 전화나 방문으로 확인하고 끝내야 해요.',
+            examples: ['사용하지 않는 부가서비스를 해지했습니다. → 안 쓰는 서비스를 완전히 끊었어요.'],
+            related: ['위약금', '환불', '자동이체'],
+          },
+          {
+            word: '환불',
+            easyWord: '낸 돈을 다시 돌려받는 것',
+            seniorMeaning: '물건을 반품하거나 서비스 이용을 취소했을 때, 이미 지불했던 돈을 다시 돌려받는 것을 말합니다.',
+            childMeaning: '산 물건을 돌려주거나 취소해서 내었던 돈을 다시 돌려받는 거예요.',
+            seniorTip: '영수증이나 결제한 카드를 꼭 함께 가지고 가셔야 빠르게 돌려받으실 수 있습니다.',
+            childTip: '돈을 돌려받을 때는 영수증을 꼭 챙겨서 어른과 함께 가야 해요.',
+            examples: ['7일 이내에 전액 환불이 가능합니다. → 일주일 안에 내신 돈을 모두 돌려받을 수 있어요.'],
+            related: ['해지', '위약금', '지참'],
+          },
+        ];
+
+        // Extra plain-language replacements used when rewriting OCR notice text
+        var PLAIN_REPLACEMENTS = [
+          ['단수', '물 안 나옴(단수)'],
+          ['혼탁수', '흐린 물(혼탁수)'],
+          ['경구 투여', '입으로 물과 함께 드심'],
+          ['경구투여', '입으로 물과 함께 드심'],
+          ['병용 금기', '다른 약과 같이 드시면 안 됨'],
+          ['병용금기', '다른 약과 같이 드시면 안 됨'],
+          ['탈거', '부품 빼내기'],
+          ['세척', '깨끗이 씻기'],
+          ['전원 차단', '전기 코드 뽑기'],
+          ['전원차단', '전기 코드 뽑기'],
+          ['기한 내 납부', '마감 날까지 돈 내기'],
+          ['연체료', '늦게 내서 더 붙는 돈'],
+          ['지참', '챙겨 가기'],
+          ['금일', '오늘'],
+          ['익일', '내일'],
+          ['협조 요망', '부탁드립니다'],
+          ['협조 부탁', '도움 부탁'],
+          ['필히', '꼭'],
+          ['반드시', '꼭'],
+          ['문의처', '물어볼 전화번호'],
+          ['복용', '약 먹기'],
+          ['공복', '빈속'],
+          ['금식', '음식과 물 안 먹기'],
+          ['부작용', '아프거나 불편한 증상'],
+          ['환기', '창문 열기'],
+          ['폐기', '버리기'],
+          ['발생', '생김'],
+          ['실시', '진행'],
+          ['예정', '할 계획'],
+        ];
+
+        // ============================================================
+        // App State
+        // ============================================================
+        var state = {
+          audience: 'senior',
+          imageDataUrl: null,
+          analysisResult: null,
+          simplerResult: null,
+          simplifyLevel: 0,
+          isAnalyzing: false,
+          ocrProgressText: '',
+          errorMessage: null,
+          wordQuery: '',
+          searchedWord: null,
+          wordResult: null,
+          isLookingUpWord: false,
+          wordError: null,
+          history: readStorage(HISTORY_KEY, []),
+          wordbook: readStorage(WORDBOOK_KEY, []),
+          reminders: readStorage(REMINDERS_KEY, []),
+          reminderSettings: Object.assign(
+            { masterEnabled: true, soundEnabled: true, voiceEnabled: true, browserPushEnabled: true },
+            readStorage(REMINDER_SETTINGS_KEY, {}),
+          ),
+          reminderDraft: {
+            title: '',
+            scheduleType: 'daily',
+            date: getTodayStr(0),
+            time: '09:00',
+          },
+          activeAlert: null,
+          cameraStream: null,
+          recognition: null,
+          isListening: false,
+        };
+
+        // ============================================================
+        // Utility Helpers
+        // ============================================================
+        function getTodayStr(offsetDays) {
+          var d = new Date();
+          d.setDate(d.getDate() + (offsetDays || 0));
+          return (
+            d.getFullYear() +
+            '-' +
+            String(d.getMonth() + 1).padStart(2, '0') +
+            '-' +
+            String(d.getDate()).padStart(2, '0')
+          );
+        }
+
+        function getCurrentHHMM() {
+          var d = new Date();
+          return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+
+        function normalizeKey(str) {
+          return String(str || '').replace(/\s+/g, '').toLowerCase().trim();
+        }
+
+        function escapeHtml(str) {
+          return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function withTopicParticle(word) {
+          var t = String(word || '').trim();
+          var code = t.charCodeAt(t.length - 1);
+          if (code >= 0xac00 && code <= 0xd7a3) {
+            return t + ((code - 0xac00) % 28 !== 0 ? '은' : '는');
+          }
+          return t + '는';
+        }
+
+        function withCopulaPhrase(phrase) {
+          var t = String(phrase || '').trim();
+          var code = t.charCodeAt(t.length - 1);
+          if (code >= 0xac00 && code <= 0xd7a3) {
+            return t + ((code - 0xac00) % 28 !== 0 ? '이라는' : '라는');
+          }
+          return t + '라는';
+        }
+
+        function formatKoreanDate(isoString) {
+          try {
+            var d = new Date(isoString);
+            return d.getMonth() + 1 + '월 ' + d.getDate() + '일';
+          } catch (e) {
+            return '';
+          }
+        }
+
+        function formatTimeLabel(hhmm) {
+          var parts = String(hhmm || '').split(':');
+          var h = Number(parts[0]);
+          var m = Number(parts[1]);
+          if (isNaN(h) || isNaN(m)) return hhmm;
+          var period = h < 12 ? '오전' : '오후';
+          var dh = h === 0 ? 12 : h > 12 ? h - 12 : h;
+          return period + ' ' + dh + '시 ' + String(m).padStart(2, '0') + '분';
+        }
+
+        function formatDateLabel(ymd) {
+          var parts = String(ymd || '').split('-');
+          if (parts.length !== 3) return ymd;
+          return Number(parts[1]) + '월 ' + Number(parts[2]) + '일';
+        }
+
+        // ============================================================
+        // Reference Photo Search (Openverse API + Clean Inline SVG Fallback)
+        // ============================================================
+        var refPhotoCache = {};
+        var TOPIC_RULES = [
+          {
+            keywords: ['약', '복용', '경구', '처방', '알약', '병용', '약국'],
+            query: 'medicine pills',
+            fallback: 'medicine',
+            svgType: 'medicine',
+          },
+          {
+            keywords: ['단수', '수도', '물', '혼탁', '저수조', '급수'],
+            query: 'water faucet',
+            fallback: 'water',
+            svgType: 'water',
+          },
+          {
+            keywords: ['세탁기', '필터', '탈거', '건조기', '가전', '청소', '세척'],
+            query: 'washing machine',
+            fallback: 'appliance',
+            svgType: 'appliance',
+          },
+          {
+            keywords: ['전기', '전원', '콘센트', '코드', '플러그', '차단'],
+            query: 'electric plug',
+            fallback: 'electricity',
+            svgType: 'electricity',
+          },
+          {
+            keywords: ['요금', '납부', '고지서', '체납', '연체', '감면', '기한', '세금', '관리비'],
+            query: 'calendar calculator',
+            fallback: 'calendar',
+            svgType: 'calendar',
+          },
+          {
+            keywords: ['병원', '검진', '금식', '진료', '혈압', '수술'],
+            query: 'hospital doctor',
+            fallback: 'hospital',
+            svgType: 'hospital',
+          },
+        ];
+
+        function inferTopic(text) {
+          for (var i = 0; i < TOPIC_RULES.length; i++) {
+            var rule = TOPIC_RULES[i];
+            if (
+              rule.keywords.some(function (kw) {
+                return text.indexOf(kw) !== -1;
+              })
+            ) {
+              return rule;
+            }
+          }
+          return {
+            query: 'reading guide paper',
+            fallback: 'notebook',
+            svgType: 'general',
+          };
+        }
+
+        function createHelperSvgDataUrl(svgType, titleText) {
+          var iconMarkup = '';
+          if (svgType === 'medicine') {
+            iconMarkup =
+              '<rect x="70" y="75" width="76" height="90" rx="14" fill="#ffffff" stroke="#1d4ed8" stroke-width="5"/>' +
+              '<rect x="82" y="55" width="52" height="22" rx="6" fill="#1d4ed8"/>' +
+              '<path d="M108 100v36M90 118h36" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round"/>' +
+              '<path d="M185 88h56l-8 76a8 8 0 0 1-8 7h-24a8 8 0 0 1-8-7z" fill="#dbeafe" stroke="#1d4ed8" stroke-width="5"/>' +
+              '<path d="M190 124h46" stroke="#2563eb" stroke-width="4"/>';
+          } else if (svgType === 'water') {
+            iconMarkup =
+              '<path d="M60 110h110a20 20 0 0 1 20 20v16h-26v-12H60z" fill="#1d4ed8"/>' +
+              '<path d="M177 156c12 18 20 30 20 40a20 20 0 1 1-40 0c0-10 8-22 20-40z" fill="#60a5fa" stroke="#1d4ed8" stroke-width="4"/>' +
+              '<rect x="82" y="70" width="50" height="16" rx="8" fill="#1e3a8a"/>' +
+              '<rect x="101" y="86" width="12" height="24" fill="#1e3a8a"/>';
+          } else if (svgType === 'appliance') {
+            iconMarkup =
+              '<rect x="88" y="48" width="144" height="144" rx="18" fill="#ffffff" stroke="#1d4ed8" stroke-width="5"/>' +
+              '<line x1="88" y1="84" x2="232" y2="84" stroke="#93c5fd" stroke-width="4"/>' +
+              '<circle cx="160" cy="138" r="36" fill="#dbeafe" stroke="#1d4ed8" stroke-width="5"/>' +
+              '<circle cx="114" cy="66" r="7" fill="#1d4ed8"/>' +
+              '<circle cx="136" cy="66" r="7" fill="#60a5fa"/>';
+          } else if (svgType === 'electricity') {
+            iconMarkup =
+              '<rect x="98" y="96" width="124" height="62" rx="14" fill="#ffffff" stroke="#1d4ed8" stroke-width="5"/>' +
+              '<line x1="132" y1="60" x2="132" y2="96" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round"/>' +
+              '<line x1="188" y1="60" x2="188" y2="96" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round"/>' +
+              '<path d="M160 158v40" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round"/>';
+          } else if (svgType === 'calendar') {
+            iconMarkup =
+              '<rect x="84" y="60" width="152" height="130" rx="16" fill="#ffffff" stroke="#1d4ed8" stroke-width="5"/>' +
+              '<rect x="84" y="60" width="152" height="36" rx="12" fill="#1d4ed8"/>' +
+              '<circle cx="160" cy="140" r="24" fill="none" stroke="#dc2626" stroke-width="6"/>' +
+              '<path d="M148 140l9 9 18-18" fill="none" stroke="#dc2626" stroke-width="5" stroke-linecap="round"/>';
+          } else {
+            iconMarkup =
+              '<rect x="92" y="54" width="136" height="132" rx="16" fill="#ffffff" stroke="#1d4ed8" stroke-width="5"/>' +
+              '<path d="M160 88v48M136 112h48" stroke="#1d4ed8" stroke-width="10" stroke-linecap="round"/>' +
+              '<path d="M120 160h80" stroke="#93c5fd" stroke-width="6" stroke-linecap="round"/>';
+          }
+
+          var svg =
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220">' +
+            '<rect width="320" height="220" rx="18" fill="#eff6ff"/>' +
+            iconMarkup +
+            '</svg>';
+          return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+        }
+
+        function fetchOpenversePhoto(query, sources) {
+          var key = sources + ':' + query;
+          if (key in refPhotoCache) {
+            return Promise.resolve(refPhotoCache[key]);
+          }
+          var url =
+            'https://api.openverse.org/v1/images/?q=' +
+            encodeURIComponent(query) +
+            '&source=' +
+            encodeURIComponent(sources) +
+            '&mature=false&page_size=6';
+
+          return fetch(url)
+            .then(function (r) {
+              if (!r.ok) return null;
+              return r.json();
+            })
+            .then(function (data) {
+              if (!data || !Array.isArray(data.results)) return null;
+              var blocked = ['selfie', 'farewell', 'funeral', 'war', 'svg', 'diagram', '1950', '1940'];
+              for (var i = 0; i < data.results.length; i++) {
+                var item = data.results[i];
+                var imgUrl = item.thumbnail || item.url || '';
+                var title = (item.title || '').toLowerCase();
+                if (!imgUrl.startsWith('https://')) continue;
+                if (imgUrl.toLowerCase().endsWith('.svg') || item.filetype === 'svg') continue;
+                if (
+                  blocked.some(function (b) {
+                    return title.indexOf(b) !== -1;
+                  })
+                ) {
+                  continue;
+                }
+                var hit = { imageUrl: imgUrl, imageAlt: item.title || query };
+                refPhotoCache[key] = hit;
+                return hit;
+              }
+              return null;
+            })
+            .catch(function () {
+              return null;
+            });
+        }
+
+        function findReferencePhotoForText(koreanText) {
+          var topic = inferTopic(koreanText);
+          return fetchOpenversePhoto(topic.query, 'stocksnap,rawpixel')
+            .then(function (res) {
+              if (res) return res;
+              return fetchOpenversePhoto(topic.fallback, 'stocksnap,rawpixel');
+            })
+            .then(function (res) {
+              if (res) return res;
+              return {
+                imageUrl: createHelperSvgDataUrl(topic.svgType, topic.query),
+                imageAlt: '이해를 돕는 참고 그림',
+              };
+            });
+        }
+
+        // ============================================================
+        // Image Preprocessing + Client-Side OCR & Korean Easy-Read Engine
+        // ============================================================
+        function loadImgEl(src) {
+          return new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onload = function () {
+              resolve(img);
+            };
+            img.onerror = function () {
+              reject(new Error('사진을 불러오지 못했습니다.'));
+            };
+            img.src = src;
+          });
+        }
+
+        function compressImageDataUrl(src, maxDim, quality) {
+          return loadImgEl(src).then(function (img) {
+            var ratio = Math.min(1, (maxDim || 1600) / Math.max(img.width, img.height));
+            var w = Math.max(1, Math.round(img.width * ratio));
+            var h = Math.max(1, Math.round(img.height * ratio));
+            var canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            return canvas.toDataURL('image/jpeg', quality || 0.88);
+          });
+        }
+
+        function preprocessForOcr(src) {
+          return loadImgEl(src).then(function (img) {
+            var scale = Math.min(2.2, Math.max(1, 1400 / Math.max(img.width, img.height)));
+            var w = Math.max(1, Math.round(img.width * scale));
+            var h = Math.max(1, Math.round(img.height * scale));
+            var canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            var imgData = ctx.getImageData(0, 0, w, h);
+            var data = imgData.data;
+            for (var i = 0; i < data.length; i += 4) {
+              var gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+              var contrasted = Math.min(255, Math.max(0, (gray - 128) * 1.25 + 128));
+              data[i] = contrasted;
+              data[i + 1] = contrasted;
+              data[i + 2] = contrasted;
+            }
+            ctx.putImageData(imgData, 0, 0);
+            return canvas.toDataURL('image/png');
+          });
+        }
+
+        function simplifySentenceKorean(sentence, audience) {
+          var s = sentence.replace(/\s+/g, ' ').trim();
+          PLAIN_REPLACEMENTS.forEach(function (pair) {
+            s = s.split(pair[0]).join(pair[1]);
+          });
+          if (audience === 'child') {
+            s = s
+              .replace(/하시기 바랍니다\.?/g, '해 주세요.')
+              .replace(/하십시오\.?/g, '하세요.')
+              .replace(/바랍니다\.?/g, '해요.')
+              .replace(/됩니다\.?/g, '돼요.');
+          } else {
+            s = s
+              .replace(/하시기 바랍니다\.?/g, '하시면 됩니다.')
+              .replace(/요망합니다\.?/g, '부탁드립니다.');
+          }
+          return s;
+        }
+
+        function buildAnalysisFromOcrText(rawText, audience) {
+          var cleaned = String(rawText || '')
+            .replace(/[|_=~`^]{2,}/g, ' ')
+            .replace(/\r/g, '\n')
+            .trim();
+
+          var koreanChars = (cleaned.match(/[가-힣]/g) || []).length;
+          if (cleaned.length < 10 || koreanChars < 4) {
+            return {
+              isReadable: false,
+              unreadableReason:
+                '사진 속 글자가 흐리거나 너무 작아서 제대로 읽지 못했어요. 밝은 곳에서 글자가 크게 보이도록 가까이 다시 찍어 주세요.',
+              documentTitle: '',
+              documentType: '',
+              mainConclusion: '',
+              actionSteps: [],
+              keyInfo: [],
+              cautions: [],
+              difficultWords: [],
+              spokenSummary: '',
+              rawText: cleaned,
+            };
+          }
+
+          var lines = cleaned
+            .split(/\n+/)
+            .map(function (l) {
+              return l.replace(/\s+/g, ' ').trim();
+            })
+            .filter(function (l) {
+              return l.length >= 3;
+            });
+
+          var sentences = cleaned
+            .replace(/\n+/g, ' ')
+            .split(/(?<=[.!?다요])\s+/)
+            .map(function (s) {
+              return s.trim();
+            })
+            .filter(function (s) {
+              return s.length >= 6;
+            });
+
+          if (sentences.length === 0) {
+            sentences = lines;
+          }
+
+          var fullLower = cleaned.toLowerCase();
+          var docType = '생활 안내문';
+          var docTitle = '안내문 쉬운 말 요약';
+          var helperCaption = '안내문 내용을 이해하는 데 도움이 되는 참고 사진이에요.';
+
+          if (/(약|복용|경구|처방|식후|식전|병용|약국)/.test(fullLower)) {
+            docType = '약국 복약 안내';
+            docTitle = '약 드시는 방법 쉬운 안내';
+            helperCaption = '안내문에 적힌 대로 물과 함께 정해진 시간에 약을 챙겨 드세요.';
+          } else if (/(단수|저수조|혼탁|수도|물탱크)/.test(fullLower)) {
+            docType = '생활 안내문';
+            docTitle = '물 안 나오는 날(단수) 안내';
+            helperCaption = '물이 안 나오기 전에 미리 마실 물과 씻을 물을 받아 두세요.';
+          } else if (/(필터|탈거|세척|전원|코드|세탁기|청소기|에어컨|보일러|버튼)/.test(fullLower)) {
+            docType = '가전제품 설명서';
+            docTitle = '기계 사용 및 청소 쉬운 안내';
+            helperCaption = '안전에 유의해 전원을 확인하고 순서대로 손질해 보세요.';
+          } else if (/(납부|요금|고지서|연체|체납|관리비|세금|자동이체)/.test(fullLower)) {
+            docType = '요금 · 공과금 안내';
+            docTitle = '돈 내는 날과 방법 쉬운 안내';
+            helperCaption = '정해진 날짜를 달력에 표시해 두고 늦지 않게 챙겨 내세요.';
+          } else if (/(병원|검진|금식|진료|수술|예약)/.test(fullLower)) {
+            docType = '병원 안내문';
+            docTitle = '병원 방문 및 검사 쉬운 안내';
+            helperCaption = '병원 가기 전 준비할 것과 주의사항을 미리 확인하세요.';
+          } else if (lines[0] && lines[0].length <= 28) {
+            docTitle = simplifySentenceKorean(lines[0], audience);
+          }
+
+          // Extract difficult words found in text
+          var difficultWords = [];
+          var seenWords = {};
+          GLOSSARY.forEach(function (g) {
+            var terms = [g.word].concat(g.aliases || []);
+            var found = terms.some(function (t) {
+              return cleaned.indexOf(t) !== -1;
+            });
+            if (found && !seenWords[g.word]) {
+              seenWords[g.word] = true;
+              difficultWords.push({
+                originalWord: g.word,
+                easyMeaning: g.easyWord + '. ' + (audience === 'child' ? g.childMeaning : g.seniorMeaning),
+                example: g.examples && g.examples[0] ? g.examples[0] : '',
+              });
+            }
+          });
+
+          // Extract Key Info (phones, dates, times, amounts)
+          var keyInfo = [];
+          var phoneMatches = cleaned.match(/(?:0\d{1,2}[-\s.)]?\d{3,4}[-\s.]?\d{4}|1[568]\d{2}[-\s.]?\d{4})/g) || [];
+          var seenPhones = {};
+          phoneMatches.slice(0, 2).forEach(function (ph) {
+            var cleanPh = ph.trim();
+            if (!seenPhones[cleanPh]) {
+              seenPhones[cleanPh] = true;
+              keyInfo.push({ label: '물어볼 전화번호', value: cleanPh, isPhone: true });
+            }
+          });
+
+          var dateMatches = cleaned.match(/(?:\d{4}년\s*)?\d{1,2}월\s*\d{1,2}일(?:\s*\([월화수목금토일]\))?/g) || [];
+          dateMatches.slice(0, 2).forEach(function (dt) {
+            keyInfo.push({ label: '중요한 날짜', value: dt.trim(), isPhone: false });
+          });
+
+          var timeMatches = cleaned.match(/(?:오전|오후)?\s*\d{1,2}시(?:\s*\d{1,2}분)?(?:\s*[~-]\s*(?:오전|오후)?\s*\d{1,2}시(?:\s*\d{1,2}분)?)?/g) || [];
+          timeMatches.slice(0, 2).forEach(function (tm) {
+            if (tm.trim().length >= 2) {
+              keyInfo.push({ label: '시간 안내', value: tm.trim(), isPhone: false });
+            }
+          });
+
+          var moneyMatches = cleaned.match(/[\d,]+\s*원/g) || [];
+          moneyMatches.slice(0, 2).forEach(function (mn) {
+            keyInfo.push({ label: '금액', value: mn.trim(), isPhone: false });
+          });
+
+          // Separate cautions vs action steps
+          var cautions = [];
+          var actionSentences = [];
+          sentences.forEach(function (s) {
+            if (/(주의|금지|안 됨|안됨|금기|삼가|조심|마세요|마십시오|불가|위험|부작용|연체|위약금|감전|금식)/.test(s)) {
+              cautions.push(simplifySentenceKorean(s, audience));
+            } else {
+              actionSentences.push(simplifySentenceKorean(s, audience));
+            }
+          });
+
+          if (actionSentences.length === 0 && sentences.length > 0) {
+            actionSentences = sentences.slice(0, 4).map(function (s) {
+              return simplifySentenceKorean(s, audience);
+            });
+          }
+
+          var actionSteps = actionSentences.slice(0, 5).map(function (detail, idx) {
+            var titleWords = detail.split(' ').slice(0, 4).join(' ');
+            return {
+              stepNumber: idx + 1,
+              actionTitle: titleWords.length > 22 ? titleWords.slice(0, 22) + '…' : titleWords,
+              actionDetail: detail,
+              whenOrWhere: '',
+            };
+          });
+
+          // Core Main Conclusion
+          var mainParts = actionSentences.slice(0, 2);
+          if (mainParts.length === 0 && cautions.length > 0) {
+            mainParts = cautions.slice(0, 2);
+          }
+          var mainConclusion =
+            (audience === 'child'
+              ? '이 안내문은 이렇게 하라고 알려주고 있어요. '
+              : '이 안내문에서 꼭 챙기셔야 할 핵심 내용입니다. ') +
+            mainParts.join(' ');
+
+          if (cautions.length > 0 && mainParts.length < 2) {
+            mainConclusion += ' 특히 ' + cautions[0];
+          }
+
+          var spokenSummary =
+            docTitle +
+            '. ' +
+            mainConclusion +
+            (keyInfo[0] ? ' ' + keyInfo[0].label + '는 ' + keyInfo[0].value + '입니다.' : '');
+
+          return {
+            isReadable: true,
+            documentTitle: docTitle,
+            documentType: docType,
+            mainConclusion: mainConclusion,
+            photoGuide: {
+              shouldShowPhoto: true,
+              caption: helperCaption,
+            },
+            actionSteps: actionSteps,
+            keyInfo: keyInfo,
+            cautions: cautions.slice(0, 5),
+            difficultWords: difficultWords,
+            spokenSummary: spokenSummary,
+            rawText: cleaned,
+          };
+        }
+
+        function buildSimplerExplanation(analysis, level, audience) {
+          var firstStep =
+            analysis.actionSteps && analysis.actionSteps[0]
+              ? analysis.actionSteps[0].actionDetail
+              : analysis.mainConclusion;
+          var keyPart =
+            analysis.keyInfo && analysis.keyInfo[0]
+              ? analysis.keyInfo[0].label + '는 ' + analysis.keyInfo[0].value + '이에요.'
+              : '';
+          var cautionPart =
+            analysis.cautions && analysis.cautions[0]
+              ? '그리고 ' + analysis.cautions[0]
+              : '';
+
+          var oneActionNow = firstStep;
+          var ultraEasySummary = '';
+          var everydayExample = '';
+
+          if (level >= 2) {
+            oneActionNow =
+              (audience === 'child' ? '어른과 함께 이것부터 해 보세요: ' : '가장 먼저 딱 이것만 하세요: ') +
+              (analysis.actionSteps && analysis.actionSteps[0]
+                ? analysis.actionSteps[0].actionTitle
+                : '안내된 내용 천천히 확인하기');
+            ultraEasySummary =
+              '어려운 말은 다 빼고 쉽게 말씀드릴게요. ' +
+              firstStep +
+              ' ' +
+              (keyPart || '날짜와 시간을 꼭 기억해 주세요.');
+            everydayExample =
+              '예를 들어 집에서 달력에 큰 동그라미를 그려 두고, 적힌 시간만 맞추어 행동하시면 걱정하실 일이 없어요.';
+          } else {
+            ultraEasySummary =
+              (audience === 'child'
+                ? '어려운 말을 쏙 빼고 친구처럼 쉽게 다시 알려줄게요. '
+                : '어려운 한자어를 빼고 옆에서 말씀드리듯 쉽게 풀어드릴게요. ') +
+              firstStep +
+              ' ' +
+              keyPart +
+              ' ' +
+              cautionPart;
+            everydayExample =
+              analysis.difficultWords && analysis.difficultWords[0]
+                ? '안내문에 나온 "' +
+                  analysis.difficultWords[0].originalWord +
+                  '"라는 말은 쉽게 "' +
+                  analysis.difficultWords[0].easyMeaning +
+                  '" 뜻이라고 생각하시면 됩니다.'
+                : '모르겠거나 헷갈릴 때는 혼자 고민하지 마시고 안내문에 적힌 전화번호로 바로 물어보시면 친절히 알려줍니다.';
+          }
+
+          return {
+            oneActionNow: oneActionNow.trim(),
+            ultraEasySummary: ultraEasySummary.replace(/\s+/g, ' ').trim(),
+            everydayExample: everydayExample.trim(),
+            photoGuide: {
+              shouldShowPhoto: true,
+              caption: '설명을 더 쉽게 떠올릴 수 있도록 관련 참고 사진을 함께 보여드려요.',
+            },
+            spokenScript: (
+              '더 쉽게 다시 설명해 드릴게요. 지금 딱 이것만 하세요. ' +
+              oneActionNow +
+              ' ' +
+              ultraEasySummary +
+              ' ' +
+              everydayExample
+            )
+              .replace(/\s+/g, ' ')
+              .trim(),
+          };
+        }
+
+        function runPhotoAnalysis(dataUrl, audience) {
+          state.isAnalyzing = true;
+          state.errorMessage = null;
+          state.simplerResult = null;
+          state.simplifyLevel = 0;
+          state.ocrProgressText = '사진 속 글자를 읽고 있어요...';
+          renderPhotoSummary();
+
+          if (!window.Tesseract || typeof window.Tesseract.createWorker !== 'function') {
+            state.isAnalyzing = false;
+            state.errorMessage =
+              '글자 읽기 도구(OCR)를 불러오는 중이거나 인터넷 연결이 필요합니다. 잠시 후 다시 시도해 주세요.';
+            renderPhotoSummary();
+            return;
+          }
+
+          var workerRef = null;
+          preprocessForOcr(dataUrl)
+            .then(function (ocrImg) {
+              return window.Tesseract.createWorker('kor+eng', 1, {
+                logger: function (m) {
+                  if (m && m.status === 'recognizing text' && typeof m.progress === 'number') {
+                    var pct = Math.round(m.progress * 100);
+                    state.ocrProgressText = '사진 속 글자를 읽고 있어요... ' + pct + '%';
+                    var progEl = document.getElementById('ocr-progress-text');
+                    if (progEl) progEl.textContent = state.ocrProgressText;
+                  }
+                },
+              }).then(function (worker) {
+                workerRef = worker;
+                return worker.recognize(ocrImg);
+              });
+            })
+            .then(function (ret) {
+              if (workerRef && workerRef.terminate) {
+                workerRef.terminate().catch(function () {});
+              }
+              var extractedText = ret && ret.data ? ret.data.text : '';
+              var result = buildAnalysisFromOcrText(extractedText, audience);
+              if (!result.isReadable) {
+                return result;
+              }
+              return findReferencePhotoForText(
+                result.documentTitle + ' ' + result.mainConclusion + ' ' + (result.rawText || ''),
+              ).then(function (refImg) {
+                result.photoGuide.imageUrl = refImg.imageUrl;
+                result.photoGuide.imageAlt = refImg.imageAlt;
+                return result;
+              });
+            })
+            .then(function (finalResult) {
+              state.isAnalyzing = false;
+              state.analysisResult = finalResult;
+              renderPhotoSummary(true);
+              if (finalResult.isReadable) {
+                saveHistoryEntry(dataUrl, finalResult, audience);
+              }
+            })
+            .catch(function (err) {
+              if (workerRef && workerRef.terminate) {
+                workerRef.terminate().catch(function () {});
+              }
+              state.isAnalyzing = false;
+              state.errorMessage =
+                err && err.message
+                  ? err.message
+                  : '사진 속 글자를 읽는 중 문제가 생겼어요. 밝은 곳에서 다시 찍어 주세요.';
+              renderPhotoSummary();
+            });
+        }
+
+        // ============================================================
+        // Word Search Engine (Built-in Glossary + Live Wiktionary/Wikipedia)
+        // ============================================================
+        function lookupWord(rawWord, audience) {
+          var clean = String(rawWord || '').trim();
+          if (!clean) {
+            state.wordError = '궁금한 단어나 말을 먼저 적어 주세요.';
+            renderWordResult();
+            return;
+          }
+
+          state.wordQuery = clean;
+          document.getElementById('word-lookup-input').value = clean;
+          state.searchedWord = clean;
+          state.isLookingUpWord = true;
+          state.wordError = null;
+          renderWordResult();
+
+          var key = normalizeKey(clean);
+
+          // 1. Check photo glossary if photo analyzed
+          if (state.analysisResult && Array.isArray(state.analysisResult.difficultWords)) {
+            var hint = state.analysisResult.difficultWords.find(function (d) {
+              return normalizeKey(d.originalWord) === key || normalizeKey(d.originalWord).indexOf(key) !== -1;
+            });
+            if (hint) {
+              var tip =
+                audience === 'child'
+                  ? '올리신 안내문 사진에 나온 말이에요. 어른과 함께 순서대로 따라 해 보세요.'
+                  : '올리신 안내문 사진에 적혀 있는 말이에요. 위 안내 순서에 맞춰 따라 하시면 됩니다.';
+              finishWordLookup({
+                originalWord: clean,
+                easyWord: hint.easyMeaning,
+                simpleMeaning: withTopicParticle(clean) + ' 안내문에서 "' + hint.easyMeaning + '" 뜻으로 쓰였습니다.',
+                whatToDoTip: tip,
+                examples: hint.example ? [hint.example] : [],
+                relatedHardWords: [],
+                spokenScript:
+                  withTopicParticle(clean) + ' 쉬운 말로 ' + withCopulaPhrase(hint.easyMeaning) + ' 뜻이에요. ' + tip,
+              });
+              return;
+            }
+          }
+
+          // 2. Check curated easy-read notice glossary
+          for (var i = 0; i < GLOSSARY.length; i++) {
+            var entry = GLOSSARY[i];
+            var allNames = [entry.word].concat(entry.aliases || []);
+            var matched = allNames.some(function (n) {
+              return normalizeKey(n) === key;
+            });
+            if (matched) {
+              var meaning = audience === 'child' ? entry.childMeaning : entry.seniorMeaning;
+              var doTip = audience === 'child' ? entry.childTip : entry.seniorTip;
+              finishWordLookup({
+                originalWord: entry.word,
+                easyWord: entry.easyWord,
+                simpleMeaning: meaning,
+                whatToDoTip: doTip,
+                examples: entry.examples || [],
+                relatedHardWords: entry.related || [],
+                spokenScript:
+                  withTopicParticle(entry.word) +
+                  ' 쉬운 말로 ' +
+                  withCopulaPhrase(entry.easyWord) +
+                  ' 뜻이에요. ' +
+                  meaning +
+                  ' ' +
+                  doTip,
+              });
+              return;
+            }
+          }
+
+          // 3. Live Korean Wiktionary + Wikipedia lookup via CORS
+          fetchLiveKoreanDictionary(clean)
+            .then(function (live) {
+              if (live) {
+                var firstSentence = live.split(/(?<=[.!?다])\s+/)[0] || live;
+                var liveTip =
+                  audience === 'child'
+                    ? '안내문에서 이 말이 보이면 보호자나 선생님께 한 번 더 여쭤보고 행동하면 안전해요.'
+                    : '안내문에 이 말이 적혀 있다면 앞뒤 문장의 날짜나 주의사항을 함께 보시고, 헷갈릴 때는 적힌 전화번호로 물어보시면 됩니다.';
+                finishWordLookup({
+                  originalWord: clean,
+                  easyWord: firstSentence.replace(/\.$/, ''),
+                  simpleMeaning: live,
+                  whatToDoTip: liveTip,
+                  examples: [],
+                  relatedHardWords: [],
+                  spokenScript: withTopicParticle(clean) + ' ' + live + ' ' + liveTip,
+                });
+                return;
+              }
+
+              state.isLookingUpWord = false;
+              state.wordError =
+                '‘' + clean + '’의 뜻을 찾지 못했어요. 단어 띄어쓰기를 바꾸거나 더 짧은 핵심 단어로 다시 검색해 보세요.';
+              renderWordResult();
+            })
+            .catch(function () {
+              state.isLookingUpWord = false;
+              state.wordError = '단어를 찾는 중 인터넷 연결이 원활하지 않았어요. 잠시 후 다시 시도해 주세요.';
+              renderWordResult();
+            });
+        }
+
+        function finishWordLookup(result) {
+          state.isLookingUpWord = false;
+          state.wordError = null;
+          state.wordResult = result;
+          renderWordResult(true);
+        }
+
+        function cleanWiktionaryText(raw) {
+          var skips = [
+            '==',
+            'IPA(',
+            '(표준어',
+            '발음:',
+            '어원:',
+            '활용:',
+            '유의어:',
+            '반의어:',
+            '파생어:',
+            '동사:',
+            '형용사:',
+            '부사:',
+            '명사:',
+            '관용구:',
+            '속담:',
+            '번역',
+            '참조:',
+          ];
+          var lines = String(raw || '')
+            .split('\n')
+            .map(function (l) {
+              return l.trim();
+            })
+            .filter(function (l) {
+              if (!l || /^[0-9]+$/.test(l)) return false;
+              return !skips.some(function (p) {
+                return l.indexOf(p) === 0;
+              });
+            })
+            .map(function (l) {
+              return l.replace(/^[0-9]+\.\s*/, '').replace(/^[0-9]+\s+/, '');
+            })
+            .filter(function (l) {
+              return l.length >= 6;
+            });
+          return lines.slice(0, 2).join(' ');
+        }
+
+        function fetchLiveKoreanDictionary(word) {
+          var wiktUrl =
+            'https://ko.wiktionary.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=' +
+            encodeURIComponent(word) +
+            '&format=json&origin=*';
+
+          return fetch(wiktUrl)
+            .then(function (r) {
+              return r.ok ? r.json() : null;
+            })
+            .then(function (data) {
+              if (data && data.query && data.query.pages) {
+                var pages = Object.values(data.query.pages);
+                for (var i = 0; i < pages.length; i++) {
+                  if (pages[i].extract) {
+                    var cleaned = cleanWiktionaryText(pages[i].extract);
+                    if (cleaned) return cleaned;
+                  }
+                }
+              }
+              var wikiUrl =
+                'https://ko.wikipedia.org/api/rest_v1/page/summary/' +
+                encodeURIComponent(word.replace(/\s+/g, '_'));
+              return fetch(wikiUrl)
+                .then(function (r) {
+                  return r.ok ? r.json() : null;
+                })
+                .then(function (wiki) {
+                  if (wiki && wiki.type !== 'disambiguation' && wiki.extract) {
+                    return wiki.extract.split(/(?<=[.!?다요])\s+/).slice(0, 2).join(' ').trim();
+                  }
+                  return null;
+                });
+            })
+            .catch(function () {
+              return null;
+            });
+        }
+
+        // ============================================================
+        // Render Functions
+        // ============================================================
+        function renderPhotoBar() {
+          var dropzone = document.getElementById('dropzone');
+          var bar = document.getElementById('uploaded-bar');
+          var thumb = document.getElementById('uploaded-thumb-img');
+          if (state.imageDataUrl) {
+            dropzone.classList.add('hidden');
+            bar.classList.remove('hidden');
+            thumb.src = state.imageDataUrl;
+          } else {
+            dropzone.classList.remove('hidden');
+            bar.classList.add('hidden');
+            thumb.src = '';
+          }
+        }
+
+        function renderPhotoSummary(autoPlayVoice) {
+          var container = document.getElementById('photo-summary-area');
+          container.innerHTML = '';
+
+          if (state.isAnalyzing) {
+            var loadBox = document.createElement('div');
+            loadBox.className = 'box box-blue';
+            loadBox.style.textAlign = 'center';
+            loadBox.setAttribute('role', 'status');
+            loadBox.innerHTML =
+              '<div class="spinner spinner-lg"></div>' +
+              '<h3 id="ocr-progress-text" style="margin: 14px 0 0; font-size: 20px;">' +
+              escapeHtml(state.ocrProgressText || '업로드한 사진의 핵심 내용을 요약하고 있어요') +
+              '</h3>' +
+              '<p style="margin: 8px 0 0; color: var(--text-muted);">요약이 끝나면 바로 쉬운 말로 보여드리고 자동으로 소리를 들려드릴게요.</p>';
+            container.appendChild(loadBox);
+            return;
+          }
+
+          if (state.errorMessage) {
+            var errBox = document.createElement('div');
+            errBox.className = 'box box-red';
+            errBox.setAttribute('role', 'alert');
+            errBox.innerHTML =
+              '<h3 style="margin: 0; font-size: 20px; color: #7f1d1d;">잠시 문제가 생겼어요</h3>' +
+              '<p style="margin: 8px 0 0;">' +
+              escapeHtml(state.errorMessage) +
+              '</p>';
+            if (state.imageDataUrl) {
+              var retryBtn = document.createElement('button');
+              retryBtn.type = 'button';
+              retryBtn.className = 'btn btn-primary';
+              retryBtn.style.marginTop = '14px';
+              retryBtn.textContent = '다시 시도하기';
+              retryBtn.addEventListener('click', function () {
+                runPhotoAnalysis(state.imageDataUrl, state.audience);
+              });
+              errBox.appendChild(retryBtn);
+            }
+            container.appendChild(errBox);
+            return;
+          }
+
+          if (!state.analysisResult || !state.imageDataUrl) {
+            var idleBox = document.createElement('div');
+            idleBox.className = 'box box-muted';
+            idleBox.innerHTML =
+              '<h3 style="margin: 0; font-size: 20px;">업로드한 사진 핵심 내용 요약</h3>' +
+              '<p style="margin: 8px 0 0; font-size: 18px; color: var(--text-muted);">위에 안내문 사진을 올리시면, 이곳에 사진 속 핵심 내용 요약이 표시되고 자동으로 소리로 들려드립니다.</p>';
+            idleBox.appendChild(
+              createAudioPlayerBar({
+                text: '안녕하세요, 쉬운 말 안내입니다. 위에서 안내문 사진을 찍어 올리시면 바로 아래 핵심 내용 요약 창에서 무슨 뜻인지 쉽게 정리해 드리고 자동으로 음성을 들려드립니다. 아래 단어 검색 칸에서는 모르는 단어를 글이나 말로 바로 찾으실 수 있습니다.',
+                label: '소리로 듣기',
+                autoPlay: false,
+              }),
+            );
+            container.appendChild(idleBox);
+            return;
+          }
+
+          var res = state.analysisResult;
+          if (!res.isReadable) {
+            var warnBox = document.createElement('div');
+            warnBox.className = 'box box-amber';
+            warnBox.innerHTML =
+              '<h3 style="margin: 0; font-size: 22px;">사진 속 글자가 잘 보이지 않아요</h3>' +
+              '<p style="margin: 8px 0 0; font-size: 18px;">' +
+              escapeHtml(res.unreadableReason) +
+              '</p>';
+            warnBox.appendChild(
+              createAudioPlayerBar({
+                text: res.unreadableReason,
+                label: '음성 지원 · 안내 내용 소리로 듣기',
+                autoPlay: Boolean(autoPlayVoice),
+              }),
+            );
+            var reuploadBtn = document.createElement('button');
+            reuploadBtn.type = 'button';
+            reuploadBtn.className = 'btn btn-primary';
+            reuploadBtn.style.marginTop = '14px';
+            reuploadBtn.textContent = '다른 사진으로 다시 올리기';
+            reuploadBtn.addEventListener('click', resetPhoto);
+            warnBox.appendChild(reuploadBtn);
+            container.appendChild(warnBox);
+            return;
+          }
+
+          // Core Summary Box
+          var audienceText = state.audience === 'child' ? '어린이 맞춤 요약' : '어르신 맞춤 요약';
+          var summaryBox = document.createElement('div');
+          summaryBox.className = 'box box-blue';
+          summaryBox.innerHTML =
+            '<div class="meta-line">' +
+            '<span>업로드한 사진 핵심 요약</span><span aria-hidden="true">·</span>' +
+            '<span>' +
+            escapeHtml(res.documentType) +
+            '</span><span aria-hidden="true">·</span>' +
+            '<span>' +
+            escapeHtml(audienceText) +
+            '</span></div>' +
+            '<h3 class="summary-title">' +
+            escapeHtml(res.documentTitle) +
+            '</h3>' +
+            '<p class="summary-conclusion">' +
+            escapeHtml(res.mainConclusion) +
+            '</p>';
+
+          // Searched helpful reference photo (NOT the uploaded photo)
+          if (res.photoGuide && res.photoGuide.shouldShowPhoto && res.photoGuide.imageUrl) {
+            summaryBox.appendChild(
+              buildHelperPhotoCard(
+                res.photoGuide.imageUrl,
+                res.photoGuide.imageAlt,
+                res.photoGuide.caption,
+              ),
+            );
+          }
+
+          summaryBox.appendChild(
+            createAudioPlayerBar({
+              text: res.spokenSummary,
+              label: '음성 지원 · 핵심 요약 소리로 듣기',
+              autoPlay: Boolean(autoPlayVoice && !state.simplerResult),
+            }),
+          );
+
+          // "이해 못 하셨나요?" button
+          var simplerRow = document.createElement('div');
+          simplerRow.style.marginTop = '14px';
+          var simplerBtn = document.createElement('button');
+          simplerBtn.type = 'button';
+          simplerBtn.className = 'btn btn-white-blue';
+          simplerBtn.textContent = '이해 못 하셨나요? 더 쉽게 설명 듣기';
+          simplerBtn.addEventListener('click', function () {
+            triggerSimplifyMore(1);
+          });
+          simplerRow.appendChild(simplerBtn);
+          summaryBox.appendChild(simplerRow);
+
+          if (state.simplerResult) {
+            summaryBox.appendChild(buildSimplerPanel(state.simplerResult));
+          }
+
+          container.appendChild(summaryBox);
+
+          // Detailed Breakdown (Action Steps, Key Info, Cautions, Difficult Words)
+          container.appendChild(buildExplanationDetails(res));
+        }
+
+        function buildHelperPhotoCard(imageUrl, imageAlt, caption) {
+          var card = document.createElement('div');
+          card.className = 'helper-photo-card';
+
+          var head = document.createElement('div');
+          head.className = 'helper-photo-header';
+          head.innerHTML = '<span class="helper-photo-title">이해를 돕는 참고 사진</span>';
+
+          var zoomBtn = document.createElement('button');
+          zoomBtn.type = 'button';
+          zoomBtn.className = 'btn btn-secondary btn-sm';
+          zoomBtn.textContent = '사진 크게 보기';
+          zoomBtn.addEventListener('click', function () {
+            openZoomModal(imageUrl, caption);
+          });
+          head.appendChild(zoomBtn);
+          card.appendChild(head);
+
+          var frame = document.createElement('div');
+          frame.className = 'helper-photo-frame';
+          var img = document.createElement('img');
+          img.src = imageUrl;
+          img.alt = imageAlt || caption || '설명을 이해하는 데 도움이 되는 참고 사진';
+          img.referrerPolicy = 'no-referrer';
+          img.addEventListener('error', function () {
+            card.classList.add('hidden');
+          });
+          frame.appendChild(img);
+          card.appendChild(frame);
+
+          if (caption) {
+            var cap = document.createElement('p');
+            cap.className = 'helper-photo-caption';
+            cap.textContent = caption;
+            card.appendChild(cap);
+          }
+
+          return card;
+        }
+
+        function triggerSimplifyMore(nextLevel) {
+          if (!state.analysisResult) return;
+          unlockAudio();
+          var res = state.analysisResult;
+          var simpler = buildSimplerExplanation(res, nextLevel, state.audience);
+          state.simplifyLevel = nextLevel;
+          findReferencePhotoForText(
+            simpler.oneActionNow + ' ' + simpler.ultraEasySummary + ' ' + res.documentTitle,
+          ).then(function (refImg) {
+            simpler.photoGuide.imageUrl = refImg.imageUrl;
+            simpler.photoGuide.imageAlt = refImg.imageAlt;
+            state.simplerResult = simpler;
+            renderPhotoSummary(false);
+          });
+        }
+
+        function buildSimplerPanel(simpler) {
+          var panel = document.createElement('div');
+          panel.className = 'simpler-panel';
+          panel.innerHTML =
+            '<div style="font-weight: 700; color: var(--blue-dark);">더 쉽게 다시 설명해 드릴게요</div>' +
+            '<div class="one-action-box">' +
+            '<p style="font-size: 14px; font-weight: 700; color: var(--blue-dark);">지금 딱 이것만 하세요</p>' +
+            '<p style="margin-top: 4px; font-size: 20px; font-weight: 700;">' +
+            escapeHtml(simpler.oneActionNow) +
+            '</p></div>' +
+            '<div><p style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text-muted);">더 쉽게 풀어서 설명하면</p>' +
+            '<p style="margin: 4px 0 0; font-size: 18px;">' +
+            escapeHtml(simpler.ultraEasySummary) +
+            '</p></div>' +
+            '<div style="border: 1px solid var(--border); border-radius: 12px; background: #fafafa; padding: 14px;">' +
+            '<p style="margin: 0; font-size: 14px; font-weight: 700;">쉽게 예를 들면요</p>' +
+            '<p style="margin: 4px 0 0; font-size: 16px;">' +
+            escapeHtml(simpler.everydayExample) +
+            '</p></div>';
+
+          if (simpler.photoGuide && simpler.photoGuide.imageUrl) {
+            panel.appendChild(
+              buildHelperPhotoCard(
+                simpler.photoGuide.imageUrl,
+                simpler.photoGuide.imageAlt,
+                simpler.photoGuide.caption,
+              ),
+            );
+          }
+
+          panel.appendChild(
+            createAudioPlayerBar({
+              text: simpler.spokenScript,
+              label: '음성 지원 · 더 쉬운 설명 소리로 듣기',
+              autoPlay: true,
+            }),
+          );
+
+          var deeperBtn = document.createElement('button');
+          deeperBtn.type = 'button';
+          deeperBtn.className = 'btn btn-secondary';
+          deeperBtn.style.alignSelf = 'flex-start';
+          deeperBtn.textContent = '아직 조금 어려워요 · 한 번 더 쉽게 설명해 주세요';
+          deeperBtn.addEventListener('click', function () {
+            triggerSimplifyMore(state.simplifyLevel + 1);
+          });
+          panel.appendChild(deeperBtn);
+          return panel;
+        }
+
+        function buildExplanationDetails(res) {
+          var wrap = document.createElement('div');
+
+          // 1. Action Steps
+          if (res.actionSteps && res.actionSteps.length > 0) {
+            var stepSec = document.createElement('div');
+            stepSec.className = 'detail-section';
+            stepSec.innerHTML =
+              '<div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">' +
+              '<h4 class="section-heading">지금 따라 하실 순서</h4>' +
+              '<span style="color: var(--text-soft); font-size: 15px;">총 ' +
+              res.actionSteps.length +
+              '가지</span></div>' +
+              '<p style="margin: 4px 0 0; color: var(--text-muted);">하나씩 끝날 때마다 눌러서 표시해 두실 수 있어요.</p>';
+
+            stepSec.appendChild(
+              createAudioPlayerBar({
+                text: res.actionSteps
+                  .map(function (s) {
+                    return s.stepNumber + '번째 할 일. ' + s.actionDetail;
+                  })
+                  .join(' '),
+                compact: true,
+                label: '할 일 순서 소리로 듣기',
+              }),
+            );
+
+            var ol = document.createElement('ol');
+            ol.className = 'step-list';
+            res.actionSteps.forEach(function (step) {
+              var li = document.createElement('li');
+              var btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'step-btn';
+              btn.setAttribute('aria-pressed', 'false');
+              btn.innerHTML =
+                '<span class="step-num">' +
+                step.stepNumber +
+                '</span><div><p style="margin: 0; font-size: 18px; font-weight: 700;">' +
+                escapeHtml(step.actionTitle) +
+                '</p><p style="margin: 4px 0 0; font-size: 17px; color: #3f3f46;">' +
+                escapeHtml(step.actionDetail) +
+                '</p></div>';
+              btn.addEventListener('click', function () {
+                var checked = btn.classList.toggle('checked');
+                btn.setAttribute('aria-pressed', checked ? 'true' : 'false');
+                btn.querySelector('.step-num').textContent = checked ? '✓' : String(step.stepNumber);
+              });
+              li.appendChild(btn);
+              ol.appendChild(li);
+            });
+            stepSec.appendChild(ol);
+            wrap.appendChild(stepSec);
+          }
+
+          // 2. Key Info
+          if (res.keyInfo && res.keyInfo.length > 0) {
+            var infoSec = document.createElement('div');
+            infoSec.className = 'detail-section';
+            infoSec.innerHTML = '<h4 class="section-heading">꼭 알아둘 날짜 · 숫자 · 전화번호</h4>';
+            infoSec.appendChild(
+              createAudioPlayerBar({
+                text: res.keyInfo
+                  .map(function (k) {
+                    return k.label + '는 ' + k.value + '입니다.';
+                  })
+                  .join(' '),
+                compact: true,
+                label: '날짜와 전화번호 소리로 듣기',
+              }),
+            );
+            var grid = document.createElement('div');
+            grid.className = 'keyinfo-grid';
+            res.keyInfo.forEach(function (item) {
+              var card = document.createElement('div');
+              card.className = 'keyinfo-card';
+              card.innerHTML =
+                '<p style="margin: 0; font-size: 14px; font-weight: 600; color: var(--text-muted);">' +
+                escapeHtml(item.label) +
+                '</p><p style="margin: 4px 0 0; font-size: 19px; font-weight: 700;">' +
+                escapeHtml(item.value) +
+                '</p>';
+              if (item.isPhone) {
+                var tel = item.value.replace(/[^0-9+]/g, '');
+                if (tel) {
+                  var link = document.createElement('a');
+                  link.href = 'tel:' + tel;
+                  link.className = 'btn btn-primary btn-sm';
+                  link.style.marginTop = '10px';
+                  link.textContent = '이 번호로 바로 전화하기';
+                  card.appendChild(link);
+                }
+              }
+              grid.appendChild(card);
+            });
+            infoSec.appendChild(grid);
+            wrap.appendChild(infoSec);
+          }
+
+          // 3. Cautions
+          if (res.cautions && res.cautions.length > 0) {
+            var cautSec = document.createElement('div');
+            cautSec.className = 'detail-section';
+            var cautBox = document.createElement('div');
+            cautBox.className = 'box box-amber';
+            cautBox.innerHTML = '<h4 class="section-heading">조심해야 할 점</h4>';
+            cautBox.appendChild(
+              createAudioPlayerBar({
+                text: '조심하셔야 할 점입니다. ' + res.cautions.join(' '),
+                compact: true,
+                label: '주의사항 소리로 듣기',
+              }),
+            );
+            var ul = document.createElement('ul');
+            ul.className = 'caution-list';
+            res.cautions.forEach(function (c) {
+              var li = document.createElement('li');
+              li.innerHTML = '<span aria-hidden="true">•</span><span>' + escapeHtml(c) + '</span>';
+              ul.appendChild(li);
+            });
+            cautBox.appendChild(ul);
+            cautSec.appendChild(cautBox);
+            wrap.appendChild(cautSec);
+          }
+
+          // 4. Difficult Words
+          if (res.difficultWords && res.difficultWords.length > 0) {
+            var glossSec = document.createElement('div');
+            glossSec.className = 'detail-section';
+            glossSec.innerHTML =
+              '<h4 class="section-heading">안내문 속 어려운 말 쉽게 풀기</h4>' +
+              '<p style="margin: 4px 0 0; color: var(--text-muted);">안내문에 적힌 낯선 단어를 쉬운 우리말로 바꾸어 보았어요.</p>';
+            glossSec.appendChild(
+              createAudioPlayerBar({
+                text: res.difficultWords
+                  .map(function (w) {
+                    return withTopicParticle(w.originalWord) + ' ' + w.easyMeaning;
+                  })
+                  .join(' '),
+                compact: true,
+                label: '어려운 말 풀이 소리로 듣기',
+              }),
+            );
+            var listDiv = document.createElement('div');
+            listDiv.style.marginTop = '12px';
+            res.difficultWords.forEach(function (w) {
+              var row = document.createElement('div');
+              row.className = 'glossary-row';
+              row.innerHTML =
+                '<strong style="min-width: 140px; font-size: 18px; color: var(--blue-dark);">' +
+                escapeHtml(w.originalWord) +
+                '</strong><div><p style="margin: 0; font-size: 18px; font-weight: 500;">' +
+                escapeHtml(w.easyMeaning) +
+                '</p>' +
+                (w.example
+                  ? '<p style="margin: 4px 0 0; color: var(--text-muted);">예: ' + escapeHtml(w.example) + '</p>'
+                  : '') +
+                '</div>';
+              listDiv.appendChild(row);
+            });
+            glossSec.appendChild(listDiv);
+            wrap.appendChild(glossSec);
+          }
+
+          return wrap;
+        }
+
+        function renderPopularWords() {
+          var container = document.getElementById('popular-words');
+          container.innerHTML = '';
+          POPULAR_WORDS.forEach(function (w) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'word-chip';
+            btn.textContent = w;
+            btn.addEventListener('click', function () {
+              unlockAudio();
+              lookupWord(w, state.audience);
+            });
+            container.appendChild(btn);
+          });
+        }
+
+        function renderWordResult(autoPlayVoice) {
+          var container = document.getElementById('word-result-area');
+          container.innerHTML = '';
+
+          if (state.isLookingUpWord) {
+            var loadBox = document.createElement('div');
+            loadBox.className = 'box box-blue';
+            loadBox.style.textAlign = 'center';
+            loadBox.innerHTML =
+              '<div class="spinner spinner-lg"></div>' +
+              '<h3 style="margin: 12px 0 0; font-size: 20px;">쉬운 말로 뜻을 찾고 있어요</h3>' +
+              '<p style="margin: 6px 0 0; color: var(--text-muted);">‘' +
+              escapeHtml(state.searchedWord) +
+              '’의 뜻을 찾고 곧바로 소리로 들려드릴게요.</p>';
+            container.appendChild(loadBox);
+            return;
+          }
+
+          if (state.wordError) {
+            var errBox = document.createElement('div');
+            errBox.className = 'box box-red';
+            errBox.setAttribute('role', 'alert');
+            errBox.innerHTML =
+              '<h3 style="margin: 0; font-size: 20px; color: #7f1d1d;">잠시 문제가 생겼어요</h3>' +
+              '<p style="margin: 8px 0 0;">' +
+              escapeHtml(state.wordError) +
+              '</p>';
+            container.appendChild(errBox);
+            return;
+          }
+
+          if (!state.wordResult) return;
+
+          var wr = state.wordResult;
+          var audienceLabel = state.audience === 'child' ? '어린이 맞춤 풀이' : '어르신 맞춤 풀이';
+          var isSaved = state.wordbook.some(function (item) {
+            return normalizeKey(item.result.originalWord) === normalizeKey(wr.originalWord);
+          });
+
+          var card = document.createElement('div');
+          card.className = 'box box-muted';
+
+          var topRow = document.createElement('div');
+          topRow.style.display = 'flex';
+          topRow.style.flexWrap = 'wrap';
+          topRow.style.justifyContent = 'space-between';
+          topRow.style.alignItems = 'center';
+          topRow.style.gap = '12px';
+
+          var titleCol = document.createElement('div');
+          titleCol.innerHTML =
+            '<div style="font-size: 14px; color: var(--text-soft);">단어 쉬운 말 풀이 · ' +
+            audienceLabel +
+            '</div>' +
+            '<h3 style="margin: 6px 0 0; font-size: 28px;">' +
+            escapeHtml(wr.originalWord) +
+            '</h3>';
+          topRow.appendChild(titleCol);
+
+          var saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = isSaved ? 'btn btn-emerald' : 'btn btn-white-blue';
+          saveBtn.textContent = isSaved ? '단어장에 저장됨' : '단어장에 저장하기';
+          saveBtn.setAttribute('aria-pressed', isSaved ? 'true' : 'false');
+          saveBtn.addEventListener('click', function () {
+            toggleSaveToWordbook(wr);
+          });
+          topRow.appendChild(saveBtn);
+          card.appendChild(topRow);
+
+          card.appendChild(
+            createAudioPlayerBar({
+              text: wr.spokenScript,
+              label: '음성 지원 · 단어 설명 소리로 듣기',
+              autoPlay: Boolean(autoPlayVoice),
+            }),
+          );
+
+          var easyBox = document.createElement('div');
+          easyBox.className = 'box box-blue';
+          easyBox.style.marginTop = '18px';
+          easyBox.innerHTML =
+            '<p style="margin: 0; font-size: 14px; font-weight: 700; color: var(--blue-dark);">쉬운 말로 바꾸면</p>' +
+            '<p style="margin: 6px 0 0; font-size: 22px; font-weight: 700; color: #172554;">' +
+            escapeHtml(wr.originalWord) +
+            ' → ' +
+            escapeHtml(wr.easyWord) +
+            '</p>';
+          card.appendChild(easyBox);
+
+          var meaningDiv = document.createElement('div');
+          meaningDiv.style.marginTop = '18px';
+          meaningDiv.innerHTML =
+            '<h4 style="margin: 0; font-size: 20px;">무슨 뜻인가요?</h4>' +
+            '<p style="margin: 8px 0 0; font-size: 18px;">' +
+            escapeHtml(wr.simpleMeaning) +
+            '</p>';
+          card.appendChild(meaningDiv);
+
+          if (wr.whatToDoTip) {
+            var tipBox = document.createElement('div');
+            tipBox.className = 'box box-amber';
+            tipBox.style.marginTop = '18px';
+            tipBox.innerHTML =
+              '<h4 style="margin: 0; font-size: 20px;">안내문에서 이 말이 보이면 이렇게 하세요</h4>' +
+              '<p style="margin: 8px 0 0; font-size: 18px;">' +
+              escapeHtml(wr.whatToDoTip) +
+              '</p>';
+            tipBox.appendChild(
+              createAudioPlayerBar({
+                text: wr.whatToDoTip,
+                compact: true,
+                label: '이 부분만 소리로 듣기',
+              }),
+            );
+            card.appendChild(tipBox);
+          }
+
+          if (wr.examples && wr.examples.length > 0) {
+            var exSec = document.createElement('div');
+            exSec.className = 'detail-section';
+            exSec.innerHTML = '<h4 style="margin: 0; font-size: 20px;">실제로 이렇게 쓰여요</h4>';
+            wr.examples.forEach(function (ex) {
+              var exP = document.createElement('div');
+              exP.style.marginTop = '10px';
+              exP.style.padding = '14px';
+              exP.style.borderRadius = '12px';
+              exP.style.border = '1px solid var(--border)';
+              exP.style.background = '#ffffff';
+              exP.style.fontSize = '18px';
+              exP.textContent = ex;
+              exSec.appendChild(exP);
+            });
+            card.appendChild(exSec);
+          }
+
+          if (wr.relatedHardWords && wr.relatedHardWords.length > 0) {
+            var relSec = document.createElement('div');
+            relSec.className = 'detail-section';
+            relSec.innerHTML =
+              '<h4 style="margin: 0; font-size: 20px;">함께 많이 나오는 어려운 말</h4>' +
+              '<p style="margin: 4px 0 0; color: var(--text-muted);">눌러 보시면 바로 쉬운 뜻으로 풀어서 설명해 드려요.</p>';
+            var relRow = document.createElement('div');
+            relRow.className = 'word-chips';
+            wr.relatedHardWords.forEach(function (rel) {
+              var rb = document.createElement('button');
+              rb.type = 'button';
+              rb.className = 'btn btn-soft-blue';
+              rb.textContent = rel;
+              rb.addEventListener('click', function () {
+                unlockAudio();
+                lookupWord(rel, state.audience);
+              });
+              relRow.appendChild(rb);
+            });
+            relSec.appendChild(relRow);
+            card.appendChild(relSec);
+          }
+
+          container.appendChild(card);
+        }
+
+        function toggleSaveToWordbook(result) {
+          var key = normalizeKey(result.originalWord);
+          var exists = state.wordbook.some(function (item) {
+            return normalizeKey(item.result.originalWord) === key;
+          });
+          if (exists) {
+            state.wordbook = state.wordbook.filter(function (item) {
+              return normalizeKey(item.result.originalWord) !== key;
+            });
+          } else {
+            state.wordbook = [
+              {
+                id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+                savedAt: new Date().toISOString(),
+                audience: state.audience,
+                result: result,
+              },
+            ]
+              .concat(state.wordbook)
+              .slice(0, 50);
+          }
+          writeStorage(WORDBOOK_KEY, state.wordbook);
+          renderWordResult(false);
+          renderWordbook();
+        }
+
+        function renderWordbook() {
+          var container = document.getElementById('wordbook');
+          container.innerHTML = '';
+
+          var head = document.createElement('div');
+          head.style.display = 'flex';
+          head.style.flexWrap = 'wrap';
+          head.style.justifyContent = 'space-between';
+          head.style.alignItems = 'center';
+          head.style.gap = '12px';
+
+          var left = document.createElement('div');
+          left.innerHTML =
+            '<h3 class="section-heading">내 단어장' +
+            (state.wordbook.length > 0
+              ? ' <span style="font-size: 15px; font-weight: 500; color: var(--text-soft);">· ' +
+                state.wordbook.length +
+                '개 저장됨</span>'
+              : '') +
+            '</h3>';
+          head.appendChild(left);
+
+          if (state.wordbook.length > 0) {
+            var clearBtn = document.createElement('button');
+            clearBtn.type = 'button';
+            clearBtn.className = 'btn-ghost';
+            clearBtn.textContent = '단어장 비우기';
+            clearBtn.addEventListener('click', function () {
+              state.wordbook = [];
+              writeStorage(WORDBOOK_KEY, []);
+              renderWordResult(false);
+              renderWordbook();
+            });
+            head.appendChild(clearBtn);
+          }
+          container.appendChild(head);
+
+          var sub = document.createElement('p');
+          sub.style.margin = '6px 0 0';
+          sub.style.color = 'var(--text-muted)';
+          sub.textContent =
+            '검색해서 알아본 어려운 단어를 저장해 두면 나중에 다시 찾아보고 소리로 들을 수 있어요.';
+          container.appendChild(sub);
+
+          if (state.wordbook.length === 0) {
+            var empty = document.createElement('div');
+            empty.style.marginTop = '14px';
+            empty.style.padding = '18px';
+            empty.style.borderRadius = '12px';
+            empty.style.border = '1px dashed var(--border-strong)';
+            empty.style.background = '#fafafa';
+            empty.style.color = 'var(--text-muted)';
+            empty.innerHTML =
+              '아직 저장한 단어가 없어요. 위에서 모르는 단어를 검색한 뒤 <strong>‘단어장에 저장하기’</strong> 버튼을 눌러 보세요.';
+            container.appendChild(empty);
+            return;
+          }
+
+          var grid = document.createElement('div');
+          grid.className = 'cards-grid-2';
+
+          state.wordbook.forEach(function (entry) {
+            var r = entry.result;
+            var card = document.createElement('div');
+            card.className = 'item-card';
+
+            var top = document.createElement('div');
+            var titleRow = document.createElement('div');
+            titleRow.style.display = 'flex';
+            titleRow.style.justifyContent = 'space-between';
+            titleRow.style.alignItems = 'flex-start';
+            titleRow.style.gap = '8px';
+
+            var titleWrap = document.createElement('div');
+            titleWrap.innerHTML =
+              '<strong style="font-size: 20px;">' +
+              escapeHtml(r.originalWord) +
+              '</strong> <span style="color: var(--blue);">→</span> <strong style="font-size: 18px; color: var(--blue-dark);">' +
+              escapeHtml(r.easyWord) +
+              '</strong>';
+            titleRow.appendChild(titleWrap);
+
+            var delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'icon-btn';
+            delBtn.setAttribute('aria-label', r.originalWord + ' 단어장에서 삭제');
+            delBtn.textContent = '✕';
+            delBtn.addEventListener('click', function () {
+              state.wordbook = state.wordbook.filter(function (x) {
+                return x.id !== entry.id;
+              });
+              writeStorage(WORDBOOK_KEY, state.wordbook);
+              renderWordResult(false);
+              renderWordbook();
+            });
+            titleRow.appendChild(delBtn);
+            top.appendChild(titleRow);
+
+            var desc = document.createElement('p');
+            desc.style.margin = '8px 0 0';
+            desc.style.color = '#3f3f46';
+            desc.textContent = r.simpleMeaning;
+            top.appendChild(desc);
+            card.appendChild(top);
+
+            var actions = document.createElement('div');
+            actions.style.marginTop = '12px';
+            actions.style.paddingTop = '10px';
+            actions.style.borderTop = '1px solid #f4f4f5';
+            actions.style.display = 'flex';
+            actions.style.flexWrap = 'wrap';
+            actions.style.alignItems = 'center';
+            actions.style.gap = '8px';
+
+            actions.appendChild(
+              createAudioPlayerBar({
+                text: r.spokenScript || r.originalWord + '는 ' + r.easyWord + '라는 뜻이에요.',
+                compact: true,
+                label: '소리로 듣기',
+              }),
+            );
+
+            var detailBtn = document.createElement('button');
+            detailBtn.type = 'button';
+            detailBtn.className = 'btn btn-secondary btn-sm';
+            detailBtn.style.marginTop = '12px';
+            detailBtn.textContent = '자세히 보기';
+            detailBtn.addEventListener('click', function () {
+              unlockAudio();
+              state.wordQuery = r.originalWord;
+              document.getElementById('word-lookup-input').value = r.originalWord;
+              state.searchedWord = r.originalWord;
+              state.wordError = null;
+              state.wordResult = r;
+              renderWordResult(true);
+              document.getElementById('word-result-area').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+            actions.appendChild(detailBtn);
+
+            card.appendChild(actions);
+            grid.appendChild(card);
+          });
+
+          container.appendChild(grid);
+        }
+
+        function saveHistoryEntry(sourceDataUrl, result, audience) {
+          compressImageDataUrl(sourceDataUrl, 340, 0.7)
+            .then(function (thumb) {
+              var entry = {
+                id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+                createdAt: new Date().toISOString(),
+                audience: audience,
+                imageDataUrl: thumb,
+                result: result,
+              };
+              state.history = [entry].concat(state.history).slice(0, 6);
+              writeStorage(HISTORY_KEY, state.history);
+              renderHistory();
+            })
+            .catch(function () {});
+        }
+
+        function renderHistory() {
+          var container = document.getElementById('history');
+          container.innerHTML = '';
+
+          var head = document.createElement('div');
+          head.style.display = 'flex';
+          head.style.justifyContent = 'space-between';
+          head.style.alignItems = 'center';
+          head.style.gap = '12px';
+          head.innerHTML = '<h2 class="section-heading font-display">최근 확인한 안내문</h2>';
+
+          if (state.history.length > 0) {
+            var clearBtn = document.createElement('button');
+            clearBtn.type = 'button';
+            clearBtn.className = 'btn-ghost';
+            clearBtn.textContent = '기록 모두 지우기';
+            clearBtn.addEventListener('click', function () {
+              state.history = [];
+              writeStorage(HISTORY_KEY, []);
+              renderHistory();
+            });
+            head.appendChild(clearBtn);
+          }
+          container.appendChild(head);
+
+          if (state.history.length === 0) {
+            var p = document.createElement('p');
+            p.style.margin = '10px 0 0';
+            p.style.color = 'var(--text-soft)';
+            p.textContent = '안내문 사진을 올리면 여기에 기록이 남아서 나중에 다시 찾아보실 수 있어요.';
+            container.appendChild(p);
+            return;
+          }
+
+          var grid = document.createElement('div');
+          grid.className = 'cards-grid-3';
+
+          state.history.forEach(function (entry) {
+            var card = document.createElement('div');
+            card.className = 'item-card';
+
+            var loadBtn = document.createElement('button');
+            loadBtn.type = 'button';
+            loadBtn.className = 'history-btn';
+            loadBtn.innerHTML =
+              '<img class="history-thumb" src="' +
+              entry.imageDataUrl +
+              '" alt="' +
+              escapeHtml(entry.result.documentTitle) +
+              '" />' +
+              '<div style="min-width: 0; flex: 1;">' +
+              '<p style="margin: 0; font-size: 12px; color: var(--text-soft);">' +
+              escapeHtml(entry.result.documentType) +
+              ' · ' +
+              formatKoreanDate(entry.createdAt) +
+              '</p><p style="margin: 4px 0 0; font-weight: 700;">' +
+              escapeHtml(entry.result.documentTitle) +
+              '</p><p style="margin: 4px 0 0; font-size: 14px; color: var(--text-muted);">' +
+              escapeHtml(entry.result.mainConclusion.slice(0, 56)) +
+              '…</p></div>';
+            loadBtn.addEventListener('click', function () {
+              loadHistoryEntry(entry);
+            });
+            card.appendChild(loadBtn);
+
+            var foot = document.createElement('div');
+            foot.style.marginTop = '12px';
+            foot.style.paddingTop = '8px';
+            foot.style.borderTop = '1px solid #f4f4f5';
+            foot.style.display = 'flex';
+            foot.style.justifyContent = 'space-between';
+            foot.style.alignItems = 'center';
+
+            var openBtn = document.createElement('button');
+            openBtn.type = 'button';
+            openBtn.className = 'btn-ghost';
+            openBtn.style.color = 'var(--blue)';
+            openBtn.textContent = '다시 보기';
+            openBtn.addEventListener('click', function () {
+              loadHistoryEntry(entry);
+            });
+
+            var delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'icon-btn';
+            delBtn.setAttribute('aria-label', entry.result.documentTitle + ' 기록 삭제');
+            delBtn.textContent = '✕';
+            delBtn.addEventListener('click', function () {
+              state.history = state.history.filter(function (x) {
+                return x.id !== entry.id;
+              });
+              writeStorage(HISTORY_KEY, state.history);
+              renderHistory();
+            });
+
+            foot.appendChild(openBtn);
+            foot.appendChild(delBtn);
+            card.appendChild(foot);
+            grid.appendChild(card);
+          });
+
+          container.appendChild(grid);
+        }
+
+        function loadHistoryEntry(entry) {
+          unlockAudio();
+          state.audience = entry.audience === 'child' ? 'child' : 'senior';
+          syncAudienceButtons();
+          state.imageDataUrl = entry.imageDataUrl;
+          state.analysisResult = entry.result;
+          state.simplerResult = null;
+          state.simplifyLevel = 0;
+          state.errorMessage = null;
+          renderPhotoBar();
+          renderPhotoSummary(true);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // Bottom Reminder Settings Section
+        // ============================================================
+        function fireReminder(item) {
+          state.activeAlert = item;
+          var modal = document.getElementById('reminder-alert-modal');
+          document.getElementById('active-alert-title').textContent = item.title;
+          document.getElementById('active-alert-time').textContent = formatTimeLabel(item.time);
+          modal.classList.remove('hidden');
+
+          if (state.reminderSettings.soundEnabled) {
+            playGentleChime();
+          }
+          if (state.reminderSettings.voiceEnabled) {
+            setTimeout(
+              function () {
+                speakKorean('알림 시간입니다. ' + item.title + ' 하실 시간이에요.', 0.9, 'reminder-alarm');
+              },
+              state.reminderSettings.soundEnabled ? 550 : 0,
+            );
+          }
+          if (
+            state.reminderSettings.browserPushEnabled &&
+            'Notification' in window &&
+            Notification.permission === 'granted'
+          ) {
+            try {
+              new Notification('쉬운 말 안내 알림', {
+                body: item.title + ' (' + formatTimeLabel(item.time) + ')',
+              });
+            } catch (e) {}
+          }
+        }
+
+        function renderReminders() {
+          var container = document.getElementById('reminders');
+          container.innerHTML = '';
+
+          var card = document.createElement('div');
+          card.className = 'workspace-card';
+          card.style.marginTop = '0';
+
+          // Header + Master Toggle
+          var head = document.createElement('div');
+          head.style.display = 'flex';
+          head.style.flexWrap = 'wrap';
+          head.style.justifyContent = 'space-between';
+          head.style.alignItems = 'center';
+          head.style.gap = '14px';
+          head.innerHTML =
+            '<div><h2 class="section-heading font-display">알림 설정</h2>' +
+            '<p style="margin: 6px 0 0; color: var(--text-muted);">약 먹는 시간이나 물 안 나오는 날, 요금 마감일을 잊지 않도록 제때 알려드려요.</p></div>';
+
+          var masterBtn = document.createElement('button');
+          masterBtn.type = 'button';
+          masterBtn.className = state.reminderSettings.masterEnabled
+            ? 'btn btn-primary'
+            : 'btn btn-secondary';
+          masterBtn.textContent = state.reminderSettings.masterEnabled ? '🔔 알림 켜짐' : '🔕 알림 꺼짐';
+          masterBtn.setAttribute('aria-pressed', state.reminderSettings.masterEnabled ? 'true' : 'false');
+          masterBtn.addEventListener('click', function () {
+            unlockAudio();
+            state.reminderSettings.masterEnabled = !state.reminderSettings.masterEnabled;
+            writeStorage(REMINDER_SETTINGS_KEY, state.reminderSettings);
+            renderReminders();
+          });
+          head.appendChild(masterBtn);
+          card.appendChild(head);
+
+          // Method Checkboxes
+          var methodBox = document.createElement('div');
+          methodBox.className = 'box box-muted';
+          methodBox.style.marginTop = '20px';
+          methodBox.innerHTML = '<p style="margin: 0; font-weight: 700;">어떻게 알려드릴까요?</p>';
+
+          var methodGrid = document.createElement('div');
+          methodGrid.className = 'cards-grid-3';
+          methodGrid.style.marginTop = '12px';
+
+          [
+            { key: 'soundEnabled', label: '벨 소리로 알리기' },
+            { key: 'voiceEnabled', label: '목소리로 읽어주기' },
+            { key: 'browserPushEnabled', label: '화면 알림 띄우기' },
+          ].forEach(function (opt) {
+            var lbl = document.createElement('label');
+            lbl.className = 'checkbox-card';
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = Boolean(state.reminderSettings[opt.key]);
+            cb.addEventListener('change', function () {
+              unlockAudio();
+              state.reminderSettings[opt.key] = cb.checked;
+              writeStorage(REMINDER_SETTINGS_KEY, state.reminderSettings);
+            });
+            var sp = document.createElement('span');
+            sp.textContent = opt.label;
+            lbl.appendChild(cb);
+            lbl.appendChild(sp);
+            methodGrid.appendChild(lbl);
+          });
+          methodBox.appendChild(methodGrid);
+
+          if ('Notification' in window && Notification.permission === 'default') {
+            var permBar = document.createElement('div');
+            permBar.style.marginTop = '12px';
+            permBar.style.padding = '12px 14px';
+            permBar.style.borderRadius = '12px';
+            permBar.style.border = '1px solid var(--border-blue)';
+            permBar.style.background = 'var(--surface-blue)';
+            permBar.style.display = 'flex';
+            permBar.style.flexWrap = 'wrap';
+            permBar.style.justifyContent = 'space-between';
+            permBar.style.alignItems = 'center';
+            permBar.style.gap = '10px';
+            permBar.innerHTML =
+              '<span style="font-size: 14px; font-weight: 500; color: var(--blue-dark);">창을 작게 내려두어도 알림을 받으시려면 기기 알림 허용을 눌러 주세요.</span>';
+
+            var permBtn = document.createElement('button');
+            permBtn.type = 'button';
+            permBtn.className = 'btn btn-primary btn-sm';
+            permBtn.textContent = '기기 알림 허용하기';
+            permBtn.addEventListener('click', function () {
+              unlockAudio();
+              Notification.requestPermission()
+                .then(function () {
+                  renderReminders();
+                })
+                .catch(function () {});
+            });
+            permBar.appendChild(permBtn);
+            methodBox.appendChild(permBar);
+          }
+
+          card.appendChild(methodBox);
+
+          // Add New Reminder Form
+          var form = document.createElement('form');
+          form.className = 'detail-section';
+          form.innerHTML = '<h3 style="margin: 0; font-size: 20px;">새 알림 만들기</h3>';
+
+          var presets = document.createElement('div');
+          presets.className = 'word-chips';
+          if (state.analysisResult && state.analysisResult.isReadable) {
+            var docPreset = document.createElement('button');
+            docPreset.type = 'button';
+            docPreset.className = 'btn btn-soft-blue btn-sm';
+            docPreset.textContent = '방금 본 안내문 알림으로 채우기';
+            docPreset.addEventListener('click', function () {
+              state.reminderDraft.title = state.analysisResult.documentTitle;
+              state.reminderDraft.scheduleType = 'once';
+              state.reminderDraft.date = getTodayStr(1);
+              state.reminderDraft.time = '09:00';
+              renderReminders();
+            });
+            presets.appendChild(docPreset);
+          }
+
+          [
+            { label: '매일 아침 약 먹기 (08:30)', title: '아침 약 물이랑 같이 먹기', type: 'daily', date: getTodayStr(0), time: '08:30' },
+            { label: '물 받아 두기 (오늘 저녁 8:00)', title: '물 안 나오기 전에 물 받아 두기', type: 'once', date: getTodayStr(0), time: '20:00' },
+            { label: '요금 내는 날 챙기기 (내일 10:00)', title: '요금 마감일 챙겨 내기', type: 'once', date: getTodayStr(1), time: '10:00' },
+          ].forEach(function (pr) {
+            var pb = document.createElement('button');
+            pb.type = 'button';
+            pb.className = 'word-chip';
+            pb.style.fontSize = '14px';
+            pb.textContent = pr.label;
+            pb.addEventListener('click', function () {
+              state.reminderDraft.title = pr.title;
+              state.reminderDraft.scheduleType = pr.type;
+              state.reminderDraft.date = pr.date;
+              state.reminderDraft.time = pr.time;
+              renderReminders();
+            });
+            presets.appendChild(pb);
+          });
+          form.appendChild(presets);
+
+          var grid = document.createElement('div');
+          grid.className = 'reminder-grid';
+
+          var titleCol = document.createElement('div');
+          titleCol.className = 'col-5';
+          titleCol.innerHTML = '<label for="rem-title" style="display: block; font-size: 14px; font-weight: 700;">알려드릴 내용</label>';
+          var titleInput = document.createElement('input');
+          titleInput.id = 'rem-title';
+          titleInput.type = 'text';
+          titleInput.className = 'text-input';
+          titleInput.style.marginTop = '6px';
+          titleInput.placeholder = '예: 식후 30분 혈압약 먹기';
+          titleInput.value = state.reminderDraft.title;
+          titleInput.addEventListener('input', function () {
+            state.reminderDraft.title = titleInput.value;
+          });
+          titleCol.appendChild(titleInput);
+          grid.appendChild(titleCol);
+
+          var typeCol = document.createElement('div');
+          typeCol.className = 'col-3';
+          typeCol.innerHTML = '<span style="display: block; font-size: 14px; font-weight: 700;">언제 알릴까요?</span>';
+          var seg = document.createElement('div');
+          seg.className = 'segmented';
+          seg.style.marginTop = '6px';
+          seg.style.width = '100%';
+          var dailyBtn = document.createElement('button');
+          dailyBtn.type = 'button';
+          dailyBtn.className = 'segmented-btn' + (state.reminderDraft.scheduleType === 'daily' ? ' active' : '');
+          dailyBtn.style.flex = '1';
+          dailyBtn.textContent = '매일';
+          dailyBtn.addEventListener('click', function () {
+            state.reminderDraft.scheduleType = 'daily';
+            renderReminders();
+          });
+          var onceBtn = document.createElement('button');
+          onceBtn.type = 'button';
+          onceBtn.className = 'segmented-btn' + (state.reminderDraft.scheduleType === 'once' ? ' active' : '');
+          onceBtn.style.flex = '1';
+          onceBtn.textContent = '하루만';
+          onceBtn.addEventListener('click', function () {
+            state.reminderDraft.scheduleType = 'once';
+            renderReminders();
+          });
+          seg.appendChild(dailyBtn);
+          seg.appendChild(onceBtn);
+          typeCol.appendChild(seg);
+          grid.appendChild(typeCol);
+
+          if (state.reminderDraft.scheduleType === 'once') {
+            var dateCol = document.createElement('div');
+            dateCol.className = 'col-2';
+            dateCol.innerHTML = '<label for="rem-date" style="display: block; font-size: 14px; font-weight: 700;">날짜</label>';
+            var dateInput = document.createElement('input');
+            dateInput.id = 'rem-date';
+            dateInput.type = 'date';
+            dateInput.className = 'text-input';
+            dateInput.style.marginTop = '6px';
+            dateInput.value = state.reminderDraft.date;
+            dateInput.addEventListener('change', function () {
+              state.reminderDraft.date = dateInput.value;
+            });
+            dateCol.appendChild(dateInput);
+            grid.appendChild(dateCol);
+          }
+
+          var timeCol = document.createElement('div');
+          timeCol.className = state.reminderDraft.scheduleType === 'once' ? 'col-2' : 'col-4';
+          timeCol.innerHTML = '<label for="rem-time" style="display: block; font-size: 14px; font-weight: 700;">시간</label>';
+          var timeInput = document.createElement('input');
+          timeInput.id = 'rem-time';
+          timeInput.type = 'time';
+          timeInput.className = 'text-input';
+          timeInput.style.marginTop = '6px';
+          timeInput.value = state.reminderDraft.time;
+          timeInput.addEventListener('change', function () {
+            state.reminderDraft.time = timeInput.value;
+          });
+          timeCol.appendChild(timeInput);
+          grid.appendChild(timeCol);
+
+          form.appendChild(grid);
+
+          var remErr = document.createElement('p');
+          remErr.className = 'hidden';
+          remErr.style.margin = '10px 0 0';
+          remErr.style.fontSize = '14px';
+          remErr.style.fontWeight = '600';
+          remErr.style.color = 'var(--red)';
+          form.appendChild(remErr);
+
+          var saveRemBtn = document.createElement('button');
+          saveRemBtn.type = 'submit';
+          saveRemBtn.className = 'btn btn-primary btn-lg';
+          saveRemBtn.style.marginTop = '16px';
+          saveRemBtn.textContent = '+ 알림 저장하기';
+          form.appendChild(saveRemBtn);
+
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            unlockAudio();
+            var t = state.reminderDraft.title.trim();
+            if (!t) {
+              remErr.textContent = '어떤 일을 알려드릴지 내용을 먼저 적어 주세요.';
+              remErr.classList.remove('hidden');
+              return;
+            }
+            var newItem = {
+              id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+              title: t,
+              scheduleType: state.reminderDraft.scheduleType,
+              date: state.reminderDraft.date || getTodayStr(0),
+              time: state.reminderDraft.time || '09:00',
+              enabled: true,
+            };
+            state.reminders = [newItem].concat(state.reminders).slice(0, 20);
+            state.reminderDraft.title = '';
+            writeStorage(REMINDERS_KEY, state.reminders);
+            renderReminders();
+          });
+
+          card.appendChild(form);
+
+          // Saved Reminders List
+          var listSec = document.createElement('div');
+          listSec.className = 'detail-section';
+          var listHead = document.createElement('div');
+          listHead.style.display = 'flex';
+          listHead.style.justifyContent = 'space-between';
+          listHead.style.alignItems = 'center';
+          listHead.innerHTML =
+            '<h3 style="margin: 0; font-size: 20px;">설정된 알림' +
+            (state.reminders.length > 0 ? ' (' + state.reminders.length + '개)' : '') +
+            '</h3>';
+          if (state.reminders.length > 0) {
+            var clearRemBtn = document.createElement('button');
+            clearRemBtn.type = 'button';
+            clearRemBtn.className = 'btn-ghost';
+            clearRemBtn.textContent = '알림 모두 지우기';
+            clearRemBtn.addEventListener('click', function () {
+              state.reminders = [];
+              writeStorage(REMINDERS_KEY, []);
+              renderReminders();
+            });
+            listHead.appendChild(clearRemBtn);
+          }
+          listSec.appendChild(listHead);
+
+          if (state.reminders.length === 0) {
+            var noneP = document.createElement('p');
+            noneP.style.margin = '10px 0 0';
+            noneP.style.color = 'var(--text-soft)';
+            noneP.textContent = '아직 정해진 알림이 없어요. 위에서 약 시간이나 마감일을 추가하시면 제때 소리로 알려드려요.';
+            listSec.appendChild(noneP);
+          } else {
+            var ul = document.createElement('ul');
+            ul.className = 'reminder-list';
+            state.reminders.forEach(function (item) {
+              var li = document.createElement('li');
+              li.className = 'reminder-item' + (item.enabled ? ' active' : '');
+              li.innerHTML =
+                '<div><p style="margin: 0; font-size: 18px; font-weight: 700;">' +
+                escapeHtml(item.title) +
+                '</p><p style="margin: 4px 0 0; color: var(--text-muted);">' +
+                (item.scheduleType === 'daily'
+                  ? '매일 ' + formatTimeLabel(item.time)
+                  : formatDateLabel(item.date) + ' ' + formatTimeLabel(item.time)) +
+                '</p></div>';
+
+              var btns = document.createElement('div');
+              btns.className = 'btn-row';
+
+              var previewBtn = document.createElement('button');
+              previewBtn.type = 'button';
+              previewBtn.className = 'btn btn-secondary btn-sm';
+              previewBtn.textContent = '미리 듣기';
+              previewBtn.addEventListener('click', function () {
+                unlockAudio();
+                fireReminder(item);
+              });
+
+              var toggleBtn = document.createElement('button');
+              toggleBtn.type = 'button';
+              toggleBtn.className = item.enabled ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+              toggleBtn.textContent = item.enabled ? '켜짐' : '꺼짐';
+              toggleBtn.addEventListener('click', function () {
+                item.enabled = !item.enabled;
+                writeStorage(REMINDERS_KEY, state.reminders);
+                renderReminders();
+              });
+
+              var delBtn = document.createElement('button');
+              delBtn.type = 'button';
+              delBtn.className = 'icon-btn';
+              delBtn.setAttribute('aria-label', item.title + ' 알림 삭제');
+              delBtn.textContent = '✕';
+              delBtn.addEventListener('click', function () {
+                state.reminders = state.reminders.filter(function (x) {
+                  return x.id !== item.id;
+                });
+                writeStorage(REMINDERS_KEY, state.reminders);
+                renderReminders();
+              });
+
+              btns.appendChild(previewBtn);
+              btns.appendChild(toggleBtn);
+              btns.appendChild(delBtn);
+              li.appendChild(btns);
+              ul.appendChild(li);
+            });
+            listSec.appendChild(ul);
+          }
+
+          card.appendChild(listSec);
+          container.appendChild(card);
+        }
+
+        // ============================================================
+        // Event Wiring (Photo, Camera, Voice Search, Audience, Modals)
+        // ============================================================
+        var fileInput = document.getElementById('file-input');
+
+        function handleFile(file) {
+          unlockAudio();
+          if (!file || !file.type.startsWith('image/')) {
+            state.errorMessage = '사진 파일(JPG, PNG 등)만 올릴 수 있어요.';
+            renderPhotoSummary();
+            return;
+          }
+          var reader = new FileReader();
+          reader.onload = function () {
+            compressImageDataUrl(reader.result, 1600, 0.88).then(function (compressed) {
+              state.imageDataUrl = compressed;
+              state.analysisResult = null;
+              state.simplerResult = null;
+              renderPhotoBar();
+              runPhotoAnalysis(compressed, state.audience);
+            });
+          };
+          reader.readAsDataURL(file);
+        }
+
+        function resetPhoto() {
+          stopAllVoice();
+          state.imageDataUrl = null;
+          state.analysisResult = null;
+          state.simplerResult = null;
+          state.errorMessage = null;
+          renderPhotoBar();
+          renderPhotoSummary();
+        }
+
+        function syncAudienceButtons() {
+          document.querySelectorAll('[data-audience]').forEach(function (btn) {
+            var active = btn.getAttribute('data-audience') === state.audience;
+            btn.classList.toggle('active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+          });
+        }
+
+        document.querySelectorAll('[data-audience]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            unlockAudio();
+            state.audience = btn.getAttribute('data-audience') === 'child' ? 'child' : 'senior';
+            syncAudienceButtons();
+            if (state.analysisResult && state.analysisResult.rawText) {
+              var updated = buildAnalysisFromOcrText(state.analysisResult.rawText, state.audience);
+              if (state.analysisResult.photoGuide) {
+                updated.photoGuide = state.analysisResult.photoGuide;
+              }
+              state.analysisResult = updated;
+              state.simplerResult = null;
+              renderPhotoSummary(true);
+            } else if (state.searchedWord) {
+              lookupWord(state.searchedWord, state.audience);
+            }
+          });
+        });
+
+        ['header-upload-btn', 'pick-file-btn', 'change-photo-btn'].forEach(function (id) {
+          document.getElementById(id).addEventListener('click', function () {
+            unlockAudio();
+            fileInput.click();
+          });
+        });
+
+        fileInput.addEventListener('change', function () {
+          if (fileInput.files && fileInput.files[0]) {
+            handleFile(fileInput.files[0]);
+          }
+          fileInput.value = '';
+        });
+
+        var dropzone = document.getElementById('dropzone');
+        dropzone.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          dropzone.classList.add('dragging');
+        });
+        dropzone.addEventListener('dragleave', function () {
+          dropzone.classList.remove('dragging');
+        });
+        dropzone.addEventListener('drop', function (e) {
+          e.preventDefault();
+          dropzone.classList.remove('dragging');
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFile(e.dataTransfer.files[0]);
+          }
+        });
+
+        document.getElementById('reset-photo-btn').addEventListener('click', resetPhoto);
+
+        function openZoomModal(src, caption) {
+          document.getElementById('zoom-modal-img').src = src;
+          var cap = document.getElementById('zoom-modal-caption');
+          if (caption) {
+            cap.textContent = caption;
+            cap.classList.remove('hidden');
+          } else {
+            cap.classList.add('hidden');
+          }
+          document.getElementById('zoom-modal').classList.remove('hidden');
+        }
+
+        document.getElementById('zoom-uploaded-btn').addEventListener('click', function () {
+          if (state.imageDataUrl) openZoomModal(state.imageDataUrl, '');
+        });
+        document.getElementById('close-zoom-btn').addEventListener('click', function () {
+          document.getElementById('zoom-modal').classList.add('hidden');
+        });
+
+        // Camera Modal
+        function stopCamera() {
+          if (state.cameraStream) {
+            state.cameraStream.getTracks().forEach(function (t) {
+              t.stop();
+            });
+            state.cameraStream = null;
+          }
+        }
+
+        document.getElementById('open-camera-btn').addEventListener('click', function () {
+          unlockAudio();
+          var modal = document.getElementById('camera-modal');
+          var errEl = document.getElementById('camera-error');
+          var video = document.getElementById('camera-video');
+          errEl.classList.add('hidden');
+          modal.classList.remove('hidden');
+
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            errEl.textContent = '이 환경에서는 직접 카메라를 열 수 없어요. 아래 "파일에서 사진 고르기"를 눌러 주세요.';
+            errEl.classList.remove('hidden');
+            return;
+          }
+
+          navigator.mediaDevices
+            .getUserMedia({ video: { facingMode: 'environment' } })
+            .then(function (stream) {
+              state.cameraStream = stream;
+              video.srcObject = stream;
+            })
+            .catch(function () {
+              errEl.textContent = '카메라 권한이 꺼져 있어요. "파일에서 사진 고르기"로 사진을 올리실 수 있어요.';
+              errEl.classList.remove('hidden');
+            });
+        });
+
+        document.getElementById('close-camera-btn').addEventListener('click', function () {
+          stopCamera();
+          document.getElementById('camera-modal').classList.add('hidden');
+        });
+
+        document.getElementById('camera-fallback-btn').addEventListener('click', function () {
+          stopCamera();
+          document.getElementById('camera-modal').classList.add('hidden');
+          fileInput.click();
+        });
+
+        document.getElementById('capture-photo-btn').addEventListener('click', function () {
+          var video = document.getElementById('camera-video');
+          if (!video.videoWidth) return;
+          var c = document.createElement('canvas');
+          c.width = video.videoWidth;
+          c.height = video.videoHeight;
+          c.getContext('2d').drawImage(video, 0, 0);
+          var raw = c.toDataURL('image/jpeg', 0.9);
+          stopCamera();
+          document.getElementById('camera-modal').classList.add('hidden');
+          compressImageDataUrl(raw, 1600, 0.88).then(function (compressed) {
+            state.imageDataUrl = compressed;
+            state.analysisResult = null;
+            state.simplerResult = null;
+            renderPhotoBar();
+            runPhotoAnalysis(compressed, state.audience);
+          });
+        });
+
+        // Word Search & Voice Search
+        document.getElementById('word-search-form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          unlockAudio();
+          lookupWord(document.getElementById('word-lookup-input').value, state.audience);
+        });
+
+        var voiceBtn = document.getElementById('voice-search-btn');
+        var voiceStatus = document.getElementById('voice-status-msg');
+        var voiceError = document.getElementById('voice-error-msg');
+
+        voiceBtn.addEventListener('click', function () {
+          unlockAudio();
+          stopAllVoice();
+          voiceError.classList.add('hidden');
+
+          if (state.isListening && state.recognition) {
+            state.recognition.stop();
+            state.isListening = false;
+            voiceBtn.textContent = '말로 검색';
+            voiceBtn.className = 'btn btn-secondary btn-lg';
+            voiceStatus.classList.add('hidden');
+            return;
+          }
+
+          var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (!SpeechRec) {
+            voiceError.textContent = '이 브라우저에서는 음성 인식을 지원하지 않아요. 글자로 입력해 주세요.';
+            voiceError.classList.remove('hidden');
+            return;
+          }
+
+          try {
+            var rec = new SpeechRec();
+            rec.lang = 'ko-KR';
+            rec.interimResults = false;
+            rec.maxAlternatives = 1;
+            state.recognition = rec;
+            state.isListening = true;
+            voiceBtn.textContent = '말하기 끝';
+            voiceBtn.className = 'btn btn-danger btn-lg';
+            voiceStatus.textContent = '지금 듣고 있어요. 궁금한 단어를 말씀하신 뒤 잠시 기다려 주세요.';
+            voiceStatus.classList.remove('hidden');
+
+            rec.onresult = function (event) {
+              var spoken = event.results && event.results[0] && event.results[0][0]
+                ? event.results[0][0].transcript.trim()
+                : '';
+              state.isListening = false;
+              voiceBtn.textContent = '말로 검색';
+              voiceBtn.className = 'btn btn-secondary btn-lg';
+              voiceStatus.classList.add('hidden');
+              if (spoken) {
+                lookupWord(spoken, state.audience);
+              } else {
+                voiceError.textContent = '목소리가 잘 들리지 않았어요. 다시 말씀해 주세요.';
+                voiceError.classList.remove('hidden');
+              }
+            };
+
+            rec.onerror = function () {
+              state.isListening = false;
+              voiceBtn.textContent = '말로 검색';
+              voiceBtn.className = 'btn btn-secondary btn-lg';
+              voiceStatus.classList.add('hidden');
+              voiceError.textContent = '마이크 권한이 꺼져 있거나 인식에 실패했어요. 글자로 입력해 주세요.';
+              voiceError.classList.remove('hidden');
+            };
+
+            rec.onend = function () {
+              state.isListening = false;
+              voiceBtn.textContent = '말로 검색';
+              voiceBtn.className = 'btn btn-secondary btn-lg';
+              voiceStatus.classList.add('hidden');
+            };
+
+            rec.start();
+          } catch (err) {
+            voiceError.textContent = '마이크를 시작하지 못했어요. 글자로 입력해 주세요.';
+            voiceError.classList.remove('hidden');
+          }
+        });
+
+        // Reminder Alert Modal Controls
+        document.getElementById('active-alert-replay').addEventListener('click', function () {
+          if (!state.activeAlert) return;
+          unlockAudio();
+          if (state.reminderSettings.soundEnabled) playGentleChime();
+          speakKorean('알림 시간입니다. ' + state.activeAlert.title + ' 하실 시간이에요.', 0.9, 'reminder-alarm');
+        });
+        document.getElementById('active-alert-dismiss').addEventListener('click', function () {
+          stopAllVoice();
+          state.activeAlert = null;
+          document.getElementById('reminder-alert-modal').classList.add('hidden');
+        });
+
+        // Reminder 10-second Scheduler
+        setInterval(function () {
+          if (!state.reminderSettings.masterEnabled) return;
+          var today = getTodayStr(0);
+          var nowHHMM = getCurrentHHMM();
+          var triggerKey = today + ' ' + nowHHMM;
+          var changed = false;
+
+          state.reminders.forEach(function (item) {
+            if (!item.enabled || item.lastTriggeredKey === triggerKey) return;
+            var timeMatch = item.time === nowHHMM;
+            var dateMatch = item.scheduleType === 'daily' || item.date === today;
+            if (timeMatch && dateMatch) {
+              changed = true;
+              item.lastTriggeredKey = triggerKey;
+              if (item.scheduleType === 'once') {
+                item.enabled = false;
+              }
+              fireReminder(item);
+            }
+          });
+
+          if (changed) {
+            writeStorage(REMINDERS_KEY, state.reminders);
+            renderReminders();
+          }
+        }, 10000);
+
+        // Download Standalone index.html
+        function downloadStandaloneHtml() {
+          var clone = document.documentElement.cloneNode(true);
+          [
+            'photo-summary-area',
+            'word-result-area',
+            'wordbook',
+            'history',
+            'reminders',
+            'popular-words',
+          ].forEach(function (id) {
+            var el = clone.querySelector('#' + id);
+            if (el) el.innerHTML = '';
+          });
+
+          var cloneDrop = clone.querySelector('#dropzone');
+          if (cloneDrop) {
+            cloneDrop.classList.remove('hidden');
+            cloneDrop.classList.remove('dragging');
+          }
+
+          [
+            'uploaded-bar',
+            'camera-modal',
+            'zoom-modal',
+            'reminder-alert-modal',
+            'voice-status-msg',
+            'voice-error-msg',
+            'camera-error',
+            'download-feedback',
+          ].forEach(function (id) {
+            var el = clone.querySelector('#' + id);
+            if (el) el.classList.add('hidden');
+          });
+
+          var cloneThumb = clone.querySelector('#uploaded-thumb-img');
+          if (cloneThumb) cloneThumb.setAttribute('src', '');
+          var cloneZoom = clone.querySelector('#zoom-modal-img');
+          if (cloneZoom) cloneZoom.setAttribute('src', '');
+          var cloneInput = clone.querySelector('#word-lookup-input');
+          if (cloneInput) cloneInput.setAttribute('value', '');
+
+          clone.querySelectorAll('[data-audience]').forEach(function (btn) {
+            var isSenior = btn.getAttribute('data-audience') === 'senior';
+            btn.classList.toggle('active', isSenior);
+            btn.setAttribute('aria-pressed', isSenior ? 'true' : 'false');
+          });
+
+          var htmlContent = '<!doctype html>\n' + clone.outerHTML;
+          var blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = 'index.html';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(function () {
+            URL.revokeObjectURL(url);
+          }, 1000);
+
+          var feedback = document.getElementById('download-feedback');
+          if (feedback) {
+            feedback.textContent = 'index.html 파일을 내려받기 시작했어요.';
+            feedback.classList.remove('hidden');
+          }
+        }
+
+        ['download-html-btn', 'footer-download-html-btn'].forEach(function (id) {
+          var btn = document.getElementById(id);
+          if (btn) {
+            btn.addEventListener('click', downloadStandaloneHtml);
+          }
+        });
+
+        // Initial Render
+        renderPhotoBar();
+        renderPhotoSummary(false);
+        renderPopularWords();
+        renderWordbook();
+        renderHistory();
+        renderReminders();
+      })();
+    </script>
+  
+
+</body></html>
